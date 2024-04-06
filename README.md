@@ -1,6 +1,6 @@
 # Event Aggregator
 
-![Project Logo](./images/image.jpg)
+<img src="./images/image.jpg" alt="Project Logo" width="200" height="200">
 
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue)](https://github.com/taotien/event-aggregator)
 
