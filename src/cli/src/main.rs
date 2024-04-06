@@ -13,10 +13,6 @@ enum Commands {
         /// Optional radius
         #[arg(short, long)]
         radius: Option<u32>,
-
-        /// Optional distance
-        #[arg(short, long)]
-        distance: Option<u32>,
     },
 
     Update {},
@@ -26,13 +22,9 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Some(Commands::List { radius, distance }) => {
+        Some(Commands::List { radius }) => {
             if let Some(radius) = radius {
                 println!("radius: {radius}");
-            }
-
-            if let Some(distance) = distance {
-                println!("distance: {distance}");
             }
         }
         Some(Commands::Update {}) => todo!(),
