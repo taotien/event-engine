@@ -1,6 +1,8 @@
 use chrono::prelude::*;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
+#[derive(Serialize, Deserialize)]
 struct Event {
     name: String,
     start_time: DateTime<Local>,
