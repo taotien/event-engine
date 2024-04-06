@@ -1,3 +1,4 @@
+use chrono::TimeDelta;
 use clap::{Parser, Subcommand};
 use std::process::exit;
 
@@ -19,6 +20,10 @@ enum Commands {
         /// Transit methods: {walk|car|transit}
         #[arg(short, long)]
         method: Option<String>,
+
+        /// Maximum allowed travel time in minutes
+        #[arg(short, long)]
+        time: Option<i64>,
     },
 
     /// Update web crawler cache
@@ -26,10 +31,15 @@ enum Commands {
 }
 
 fn main() {
-    let cli = Cli::parse();
+    let max_travel_time: TimeDelta;
 
+    let cli = Cli::parse();
     match &cli.command {
-        Some(Commands::List { radius, method }) => {
+        Some(Commands::List {
+            radius,
+            method,
+            time,
+        }) => {
             if let Some(radius) = radius {
                 println!("radius: {radius}");
             }
@@ -48,6 +58,12 @@ fn main() {
                     println!("Error: unsupported transit method");
                     exit(-1);
                 }
+            }
+
+            if let Some(time) = time.clone() {
+                max_travel_time = TimeDelta::minutes(time);
+                println!("Maximum travel time: {}", max_travel_time);
+                /* TODO */
             }
         }
         Some(Commands::Update {}) => todo!(),
