@@ -18,23 +18,6 @@ use url::Url;
 /// # Returns
 ///
 /// Returns a Result containing the directions response or an error.
-async fn calculate_direction(
-    google_maps_client: &GoogleMapsClient,
-    home: String,
-    destination: String,
-    transit_method: TravelMode,
-) -> anyhow::Result<Response> {
-    let directions = google_maps_client
-        .directions(
-            Location::Address(String::from(home)),
-            Location::Address(String::from(destination)),
-        )
-        .with_travel_mode(transit_method)
-        .execute()
-        .await?;
-
-    Ok(directions)
-}
 
 #[tokio::main]
 async fn main() {
@@ -63,25 +46,27 @@ async fn main() {
     assert_eq!(filter_event_by_travel_time(event, filter), true);
 }
 
-/// Filters an event based on the travel time from the home location to the event location.
-///
-/// # Arguments
-///
-/// * `event` - The event to filter as an Event struct.
-/// * `filter` - The event filter as an EventFilter struct.
-///
-/// # Returns
-///
-/// Returns a boolean indicating whether the event passes the filter or not.
+async fn calculate_direction(
+    google_maps_client: &GoogleMapsClient,
+    home: String,
+    destination: String,
+    transit_method: TravelMode,
+) -> anyhow::Result<Response> {
+    let directions = google_maps_client
+        .directions(
+            Location::Address(String::from(home)),
+            Location::Address(String::from(destination)),
+        )
+        .with_travel_mode(transit_method)
+        .with_arrival_time(NaiveDate::from_ymd(2024, 4, 6).and_hms(12, 00, 0))
+        .execute()
+        .await?;
+
+    Ok(directions)
+}
+
 fn filter_event_by_travel_time(event: Event, filter: EventFilter) -> bool {
-    let google_maps_api_key = "YOUR_GOOGLE_MAPS_API_KEY";
-    //  match env::var("GOOGLE_MAPS_API_KEY") {
-    //     Ok(api_key) => api_key,
-    //     Err(_) => {
-    //         println!("GOOGLE_MAPS_API_KEY environment variable is not set.");
-    //         return false;
-    //     }
-    // };
+    let google_maps_api_key = &env::var("GOOGLE_MAPS_API_KEY").unwrap();
 
     let google_maps_client = match GoogleMapsClient::try_new(&google_maps_api_key) {
         Ok(client) => client,
@@ -98,11 +83,15 @@ fn filter_event_by_travel_time(event: Event, filter: EventFilter) -> bool {
         filter.transit_method,
     ));
 
-    // Debug print the direction variable
-    if let Ok(direction) = direction {
-        if let Ok(json) = serde_json::to_string_pretty(&direction) {
-            // Print the formatted JSON
-            println!("Direction: {}", json);
+    match direction {
+        Ok(direction) => {
+            if let Ok(json) = serde_json::to_string_pretty(&direction) {
+                // Print the formatted JSON
+                println!("Direction: {}", json);
+            }
+        }
+        Err(e) => {
+            println!("{}", e);
         }
     }
     return true;
