@@ -26,6 +26,13 @@ enum Commands {
         time: Option<i64>,
     },
 
+    /// Check status
+    Status {
+        /// View the values of the API keys
+        #[arg(long, short, action = clap::ArgAction::SetTrue)]
+        verbose: Option<bool>,
+    },
+
     /// Update web crawler cache
     Update {},
 }
@@ -66,6 +73,14 @@ fn main() {
                 /* TODO */
             }
         }
+
+        Commands::Status { verbose } => {
+            if let Some(verbose) = verbose {
+                println!("verbose: {verbose}");
+                /* TODO */
+            }
+        }
+
         Commands::Update {} => todo!(),
     }
 
