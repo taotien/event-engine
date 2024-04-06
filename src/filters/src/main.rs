@@ -1,11 +1,35 @@
+use google_maps::prelude::*;
+use std::env;
 use std::time::Duration;
 
-fn main() {
-    println!("Hello, world!");
+fn calculate_distance_matrix(
+    google_maps_client: &GoogleMapsClient,
+    home: String,
+    destination: String,
+) -> Result<DistanceMatrix, Error> {
+    let distance_matrix = google_maps_client
+        .distance_matrix(
+            vec![Waypoint::Address(String::from(home))],
+            vec![Waypoint::PlaceId(String::from(destination))],
+        )
+        .execute()
+        .await?;
+
+    Ok(distance_matrix)
 }
 
-fn filter_event(event: Event) -> bool {
-    // Return true or false based on the event's properties
+fn main() {}
+
+fn filter_event(event: Event, filter: EventFilter) -> bool {
+    let google_maps_client = GoogleMapsClient::new(&env::var("GOOGLE_MAPS_API_KEY").unwrap());
+
+    let distance_matrix = calculate_distance_matrix(
+        &google_maps_client,
+        EventFilter.home_location,
+        Event.location,
+    )
+    .unwrap();
+    println!("{:#?}", distance_matrix);
 }
 
 struct Event {
