@@ -65,6 +65,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn list(pool: Arc<Pool<Sqlite>>) {
+    println!("LIST REQUEST RECEIVED");
     Event::list_events(&pool).await.unwrap();
 }
 

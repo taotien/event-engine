@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS events
     end_time    TIMESTAMP NOT NULL,
     location    TEXT NOT NULL,
     description TEXT NOT NULL,
-    price       SMALLINT NOT NULL,
+    price       INTEGER NOT NULL,
     tags        TEXT NOT NULL,
     source      TEXT NOT NULL
 );
