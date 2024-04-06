@@ -37,6 +37,7 @@ pub async fn relevance(event: Event, user_preferences: Vec<String>) -> anyhow::R
         user_preferences.join(", ")
     );
 
+    //make request, system message instructs json standard. message instructs preferences and event details
     let request = CreateChatCompletionRequestArgs::default()
         .model("gpt-3.5-turbo-0125")
         .messages([
@@ -59,13 +60,19 @@ pub async fn relevance(event: Event, user_preferences: Vec<String>) -> anyhow::R
     // Call API
     let response = client.chat().create(request).await?;
 
+    // get serde json value
     let json_value: Value = serde_json::from_str(
         &<Option<std::string::String> as Clone>::clone(&response.choices[0].message.content)
             .unwrap(),
     )?;
+    // make f64
     let relevance = json_value["relevance"]
         .as_f64()
         .ok_or_else(|| anyhow::anyhow!("Invalid JSON format"))?;
+
+    // clamp the relevence value to 0.0 and 1.0 inclusive
+    let relevance = relevance.max(0.0).min(1.0);
+
     Ok(relevance as f32)
 }
 
