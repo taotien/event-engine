@@ -19,25 +19,26 @@ pub struct Event {
 
 impl fmt::Display for Event {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let tags_str = self.tags.join(", ");
         write!(
             f,
             "Event {{
-    name: {},
+        name: {},
     start_time: {:?},
-    end_time: {:?},
-    location: {},
-    desc: {},
-    price: {},
-    tags: {:?},
-    source: {:?},
-}}",
+        end_time: {:?},
+        location: {},
+        desc: {},
+        price: {},
+        tags: {},
+        source: {:?},
+    }}",
             self.name,
             self.start_time,
             self.end_time,
             self.location,
             self.desc,
             self.price,
-            self.tags,
+            tags_str,
             self.source
         )
     }
