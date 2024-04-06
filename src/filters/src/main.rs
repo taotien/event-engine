@@ -1,98 +1,53 @@
+use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime};
+use filters::mapfilter::filter_event_by_travel_time;
+use filters::Distance;
+use filters::Event;
+use filters::EventFilter;
+use futures::executor::block_on;
+use google_maps::distance_matrix::response::Response;
 use google_maps::prelude::*;
+use serde_json;
 use std::env;
 use std::time::Duration;
+use url::Url;
 
-fn calculate_distance_matrix(
-    google_maps_client: &GoogleMapsClient,
-    home: String,
-    destination: String,
-) -> Result<DistanceMatrix, Error> {
-    let distance_matrix = google_maps_client
-        .distance_matrix(
-            vec![Waypoint::Address(String::from(home))],
-            vec![Waypoint::PlaceId(String::from(destination))],
-        )
-        .execute()
-        .await?;
+#[tokio::main]
+async fn main() {
+    // Test case setup
+    let start_time = NaiveDateTime::new(
+        NaiveDate::from_ymd_opt(2024, 4, 7).unwrap(),
+        NaiveTime::from_hms_opt(10, 0, 0).unwrap(),
+    );
+    let end_time = NaiveDateTime::new(
+        NaiveDate::from_ymd_opt(2024, 4, 7).unwrap(),
+        NaiveTime::from_hms_opt(17, 0, 0).unwrap(),
+    );
 
-    Ok(distance_matrix)
-}
+    let event = Event {
+        name: String::from("Asian Art Museum: Free Admission Day (Every First Sunday)"),
+        start_time: chrono::Local.from_local_datetime(&start_time).unwrap(),
+        end_time: chrono::Local.from_local_datetime(&end_time).unwrap(),
+        location: String::from("200 Larkin Street San Francisco, CA"),
+        desc: String::from("Through the power of art, the Asian Art Museum in San Francisco brings the diverse cultures of Asia to life."),
+        price: 0,
+        tags: vec![String::from("art"), String::from("asian"), String::from("culture")],
+        source: Url::parse("https://sf.funcheap.com/asian-art-museum-free-admission-day-every-first-sunday-35/").unwrap(),
+    };
 
-fn main() {}
+    // Create a sample event filter
+    let filter = EventFilter {
+        home_location: String::from("2345 Golden Gate Ave, San Francisco, CA 94118"),
+        transit_method: TravelMode::Transit,
+        max_radius_distance: Distance::from_kilometers(10.0),
+        max_radius_time: Duration::from_secs(1800),
+        interests: vec![String::from("technology"), String::from("art")],
+    };
 
-fn filter_event(event: Event, filter: EventFilter) -> bool {
-    let google_maps_client = GoogleMapsClient::new(&env::var("GOOGLE_MAPS_API_KEY").unwrap());
-
-    let distance_matrix = calculate_distance_matrix(
-        &google_maps_client,
-        EventFilter.home_location,
-        Event.location,
-    )
-    .unwrap();
-    println!("{:#?}", distance_matrix);
-}
-
-struct Event {
-    name: String,
-    start_time: DateTime<Local>,
-    end_time: DateTime<Local>,
-    location: String,
-    desc: String,
-    price: u64,
-    tags: Vec<String>,
-    source: Url,
-}
-
-struct EventFilter {
-    home_location: String,
-    transit_method: TransitMethod,
-    max_radius_distance: Distance,
-
-    max_radius_time: Duration,
-    interests: Vec<String>,
-}
-
-enum TransitMethod {
-    Walking,
-    Car,
-    Transit,
-}
-struct Distance {
-    value: f64,
-    unit: DistanceUnit,
-}
-
-impl Distance {
-    fn from_kilometers(kilometers: f64) -> Distance {
-        Distance {
-            value: kilometers,
-            unit: DistanceUnit::Kilometer,
-        }
-    }
-
-    fn from_miles(miles: f64) -> Distance {
-        Distance {
-            value: miles,
-            unit: DistanceUnit::Mile,
-        }
-    }
-
-    fn to_kilometers(&self) -> f64 {
-        match self.unit {
-            DistanceUnit::Kilometer => self.value,
-            DistanceUnit::Mile => self.value * 1.60934,
-        }
-    }
-
-    fn to_miles(&self) -> f64 {
-        match self.unit {
-            DistanceUnit::Kilometer => self.value / 1.60934,
-            DistanceUnit::Mile => self.value,
-        }
-    }
-}
-
-enum DistanceUnit {
-    Kilometer,
-    Mile,
+    // Call the function and assert the result
+    filter_event_by_travel_time(
+        filter.home_location,
+        event.location,
+        filter.transit_method,
+        event.start_time.naive_local(),
+    );
 }
