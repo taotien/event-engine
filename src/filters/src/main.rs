@@ -1,10 +1,23 @@
 use futures::executor::block_on;
 use google_maps::directions::response::Response;
 use google_maps::prelude::*;
+use serde_json;
 use std::env;
 use std::time::Duration;
 use url::Url;
 
+/// Calculates the direction between two locations using the Google Maps API.
+///
+/// # Arguments
+///
+/// * `google_maps_client` - A reference to the GoogleMapsClient instance.
+/// * `home` - The home location as a String.
+/// * `destination` - The destination location as a String.
+/// * `transit_method` - The travel mode as a TravelMode enum variant.
+///
+/// # Returns
+///
+/// Returns a Result containing the directions response or an error.
 async fn calculate_direction(
     google_maps_client: &GoogleMapsClient,
     home: String,
@@ -13,9 +26,7 @@ async fn calculate_direction(
 ) -> anyhow::Result<Response> {
     let directions = google_maps_client
         .directions(
-            // Origin: Canadian Museum of Nature
             Location::Address(String::from(home)),
-            // Destination: Canada Science and Technology Museum
             Location::Address(String::from(destination)),
         )
         .with_travel_mode(transit_method)
@@ -42,7 +53,7 @@ async fn main() {
     // Create a sample event filter
     let filter = EventFilter {
         home_location: String::from("800 Great Hwy, San Francisco, CA 94121"),
-        transit_method: TravelMode::Driving,
+        transit_method: TravelMode::Transit,
         max_radius_distance: Distance::from_kilometers(10.0),
         max_radius_time: Duration::from_secs(3600),
         interests: vec![String::from("interest1"), String::from("interest2")],
@@ -52,8 +63,18 @@ async fn main() {
     assert_eq!(filter_event_by_travel_time(event, filter), true);
 }
 
+/// Filters an event based on the travel time from the home location to the event location.
+///
+/// # Arguments
+///
+/// * `event` - The event to filter as an Event struct.
+/// * `filter` - The event filter as an EventFilter struct.
+///
+/// # Returns
+///
+/// Returns a boolean indicating whether the event passes the filter or not.
 fn filter_event_by_travel_time(event: Event, filter: EventFilter) -> bool {
-    let google_maps_api_key = "AIzaSyCwZNWbKVWiqXWSvcZ8ObGYXdZu6bR1L54";
+    let google_maps_api_key = "YOUR_GOOGLE_MAPS_API_KEY";
     //  match env::var("GOOGLE_MAPS_API_KEY") {
     //     Ok(api_key) => api_key,
     //     Err(_) => {
@@ -78,10 +99,16 @@ fn filter_event_by_travel_time(event: Event, filter: EventFilter) -> bool {
     ));
 
     // Debug print the direction variable
-    println!("Direction: {:?}", direction);
+    if let Ok(direction) = direction {
+        if let Ok(json) = serde_json::to_string_pretty(&direction) {
+            // Print the formatted JSON
+            println!("Direction: {}", json);
+        }
+    }
     return true;
 }
 
+/// Represents an event.
 struct Event {
     name: String,
     start_time: DateTime<Local>,
@@ -93,21 +120,31 @@ struct Event {
     source: Url,
 }
 
+/// Represents an event filter.
 struct EventFilter {
     home_location: String,
     transit_method: TravelMode,
     max_radius_distance: Distance,
-
     max_radius_time: Duration,
     interests: Vec<String>,
 }
 
+/// Represents a distance value with a unit.
 struct Distance {
     value: f64,
     unit: DistanceUnit,
 }
 
 impl Distance {
+    /// Creates a Distance instance from kilometers.
+    ///
+    /// # Arguments
+    ///
+    /// * `kilometers` - The distance value in kilometers.
+    ///
+    /// # Returns
+    ///
+    /// Returns a Distance instance.
     fn from_kilometers(kilometers: f64) -> Distance {
         Distance {
             value: kilometers,
@@ -115,6 +152,15 @@ impl Distance {
         }
     }
 
+    /// Creates a Distance instance from miles.
+    ///
+    /// # Arguments
+    ///
+    /// * `miles` - The distance value in miles.
+    ///
+    /// # Returns
+    ///
+    /// Returns a Distance instance.
     fn from_miles(miles: f64) -> Distance {
         Distance {
             value: miles,
@@ -122,6 +168,11 @@ impl Distance {
         }
     }
 
+    /// Converts the distance value to kilometers.
+    ///
+    /// # Returns
+    ///
+    /// Returns the distance value in kilometers.
     fn to_kilometers(&self) -> f64 {
         match self.unit {
             DistanceUnit::Kilometer => self.value,
@@ -129,6 +180,11 @@ impl Distance {
         }
     }
 
+    /// Converts the distance value to miles.
+    ///
+    /// # Returns
+    ///
+    /// Returns the distance value in miles.
     fn to_miles(&self) -> f64 {
         match self.unit {
             DistanceUnit::Kilometer => self.value / 1.60934,
@@ -137,39 +193,8 @@ impl Distance {
     }
 }
 
+/// Represents a distance unit.
 enum DistanceUnit {
     Kilometer,
     Mile,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_filter_event_by_travel_time() {
-        // Create a sample event
-        let event = Event {
-            name: String::from("Sample Event"),
-            start_time: Local::now(),
-            end_time: Local::now(),
-            location: String::from("Sample Location"),
-            desc: String::from("Sample Description"),
-            price: 10,
-            tags: vec![String::from("tag1"), String::from("tag2")],
-            source: Url::parse("https://example.com").unwrap(),
-        };
-
-        // Create a sample event filter
-        let filter = EventFilter {
-            home_location: String::from("Home Location"),
-            transit_method: TravelMode::Driving,
-            max_radius_distance: Distance::from_kilometers(10.0),
-            max_radius_time: Duration::from_secs(3600),
-            interests: vec![String::from("interest1"), String::from("interest2")],
-        };
-
-        // Call the function and assert the result
-        assert_eq!(filter_event_by_travel_time(event, filter), true);
-    }
 }

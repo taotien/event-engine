@@ -328,6 +328,7 @@ dependencies = [
  "anyhow",
  "futures",
  "google_maps",
+ "serde_json",
  "tokio",
  "url",
 ]
