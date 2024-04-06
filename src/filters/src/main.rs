@@ -5,6 +5,7 @@ use filters::Distance;
 use filters::DistanceUnit;
 use filters::Event;
 use filters::EventFilter;
+use filters::TimeDistance;
 use futures::executor::block_on;
 use google_maps::distance_matrix::response::Response;
 use google_maps::prelude::*;
@@ -45,11 +46,21 @@ async fn main() {
         interests: vec![String::from("technology"), String::from("art")],
     };
 
-    // Call the function and assert the result
-    get_time_and_distance(
+    let result = get_time_and_distance(
         filter.home_location,
         event.location,
         filter.transit_method,
         event.start_time.naive_local(),
-    )
+    );
+
+    match result {
+        Ok(time_distance) => {
+            println!("{}", time_distance.travel_duration.to_string());
+            println!("{}", time_distance.distance.to_string());
+        }
+        Err(error) => {
+            // Handle the error
+            // ...
+        }
+    }
 }
