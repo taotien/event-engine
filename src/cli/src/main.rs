@@ -47,18 +47,18 @@ fn main() {
             method,
             time,
         } => {
-            if let Some(radius) = radius {
-                println!("radius: {radius}");
+            if let Some(max_radius) = radius {
+                println!("radius: {max_radius}");
             }
 
-            if let Some(method) = method {
-                if method == "walk" {
+            if let Some(transit_method) = method {
+                if transit_method == "walk" {
                     println!("Transit method: walking");
                     /* TODO */
-                } else if method == "car" {
+                } else if transit_method == "car" {
                     println!("Transit method: car");
                     /* TODO */
-                } else if method == "transit" {
+                } else if transit_method == "transit" {
                     println!("Transit method: public transit");
                     /* TODO */
                 } else {
@@ -67,8 +67,8 @@ fn main() {
                 }
             }
 
-            if let Some(time) = time.clone() {
-                max_travel_time = TimeDelta::minutes(time);
+            if let Some(travel_time) = time.clone() {
+                max_travel_time = TimeDelta::minutes(travel_time);
                 println!("Maximum travel time: {}", max_travel_time);
                 /* TODO */
             }
