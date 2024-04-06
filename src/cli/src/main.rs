@@ -9,12 +9,14 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// List events
     List {
-        /// Optional radius
+        /// Maximum allowed straight line distance
         #[arg(short, long)]
         radius: Option<u32>,
     },
 
+    /// Update web crawler cache
     Update {},
 }
 
