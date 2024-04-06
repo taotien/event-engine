@@ -237,8 +237,10 @@ checksum = "8a0d04d43504c61aa6c7531f1871dd0d418d91130162063b789da00fd7057a5e"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-targets 0.52.4",
 ]
 
@@ -326,6 +328,7 @@ name = "filters"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "futures",
  "google_maps",
  "serde_json",
