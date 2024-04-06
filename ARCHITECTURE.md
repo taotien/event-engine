@@ -9,3 +9,10 @@ finding similar users, community that attended the same event that's maybe going
 database
 
 activitypub
+
+
+for security:
+  type checked messaging and input sanitization???
+  user data is stored locally
+  open source, option to host server as well
+
