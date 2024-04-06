@@ -6,7 +6,7 @@ use std::process::exit;
 #[command(version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
-    command: Option<Commands>,
+    command: Commands,
 }
 
 #[derive(Subcommand)]
@@ -35,11 +35,11 @@ fn main() {
 
     let cli = Cli::parse();
     match &cli.command {
-        Some(Commands::List {
+        Commands::List {
             radius,
             method,
             time,
-        }) => {
+        } => {
             if let Some(radius) = radius {
                 println!("radius: {radius}");
             }
@@ -66,8 +66,7 @@ fn main() {
                 /* TODO */
             }
         }
-        Some(Commands::Update {}) => todo!(),
-        None => {}
+        Commands::Update {} => todo!(),
     }
 
     /* TODO: call backend */
