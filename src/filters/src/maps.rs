@@ -1,31 +1,32 @@
 use crate::Distance;
+use crate::DistanceUnit;
 use crate::Event;
 use crate::EventFilter;
+use crate::TimeDistance;
 use chrono::TimeDelta;
 use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime};
 use futures::executor::block_on;
 use google_maps::distance_matrix::response::Response;
 use google_maps::prelude::*;
 use serde_json;
+use serde_json::value;
 use serde_json::Value;
 use std::env;
+use std::fmt;
 use std::time::Duration;
-use url::Url;
 
-pub fn filter_event_by_travel_time(
+pub fn get_time_and_distance(
     origin: String,
     destination: String,
     transit_method: TravelMode,
     arrival_time: NaiveDateTime,
-    max_acceptable_travel_time: TimeDelta,
-) -> bool {
+) -> anyhow::Result<TimeDistance> {
     let google_maps_api_key =
         &env::var("GOOGLE_MAPS_API_KEY").expect("There's Not Google Maps API Key");
     let google_maps_client = match GoogleMapsClient::try_new(&google_maps_api_key) {
         Ok(client) => client,
         Err(_) => {
-            println!("Failed to create GoogleMapsClient.");
-            return false;
+            return Err(anyhow::Error::msg("Failed to create GoogleMapsClient."));
         }
     };
 
@@ -39,19 +40,44 @@ pub fn filter_event_by_travel_time(
 
     match direction {
         Ok(direction) => {
-            if let Ok(json) = serde_json::to_string_pretty(&direction) {
-                println!("{}", json);
-                return true;
+            if let Ok(parsed_direction) = parse_json_to_time_and_distance(&direction) {
+                return Ok(parsed_direction);
             } else {
-                // Handle the error case here
-                return false;
+                return Err(anyhow::Error::msg("Failed to parse direction"));
             }
         }
         Err(e) => {
-            println!("Error: {}", e);
-            return false;
+            return Err(anyhow::Error::msg(e));
         }
     }
+}
+
+pub fn parse_json_to_time_and_distance(
+    responce: &DistanceMatrixResponse,
+) -> Result<TimeDistance, serde_json::Error> {
+    let parsed_json: Value = serde_json::from_str(&serde_json::to_string(&responce)?)?;
+    print!(
+        "{}",
+        parsed_json["rows"][0]["elements"][0]["duration"]["value"]
+    );
+    let elements = &parsed_json["rows"][0]["elements"][0];
+    let duration = &elements["duration"]["value"];
+    let distance = &elements["distance"]["value"];
+
+    let distance_uh = Distance {
+        value: distance.to_string().parse::<f64>().unwrap() / 1000.0,
+        unit: DistanceUnit::Kilometer,
+    };
+
+    let time_distance = TimeDistance {
+        travel_duration: TimeDelta::seconds(duration.as_u64().unwrap_or(0) as i64),
+        distance: distance_uh,
+    };
+
+    println!("Travel Duration: {:?}", time_distance.travel_duration);
+    println!("Distance: {:?}", time_distance.distance);
+
+    Ok(time_distance)
 }
 
 pub async fn get_distance_matrix(
@@ -61,10 +87,6 @@ pub async fn get_distance_matrix(
     transit_method: TravelMode,
     arrival_time: NaiveDateTime,
 ) -> anyhow::Result<Response> {
-    println!("Home: {}", home);
-    println!("Destination: {}", destination);
-    println!("Transit method: {:?}", transit_method);
-    println!("Arrival time: {:?}", arrival_time);
     match google_maps_client
         .distance_matrix(
             vec![Waypoint::Address(String::from(home))],

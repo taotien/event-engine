@@ -1,6 +1,8 @@
+use chrono::Duration as TimeDelta;
 use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime};
-use filters::mapfilter::filter_event_by_travel_time;
+use filters::maps::get_time_and_distance;
 use filters::Distance;
+use filters::DistanceUnit;
 use filters::Event;
 use filters::EventFilter;
 use futures::executor::block_on;
@@ -44,10 +46,10 @@ async fn main() {
     };
 
     // Call the function and assert the result
-    filter_event_by_travel_time(
+    get_time_and_distance(
         filter.home_location,
         event.location,
         filter.transit_method,
         event.start_time.naive_local(),
-    );
+    )
 }

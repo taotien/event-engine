@@ -1,7 +1,8 @@
+use chrono::TimeDelta;
 use google_maps::prelude::*;
 use std::time::Duration;
 use url::Url;
-pub mod mapfilter;
+pub mod maps;
 
 pub struct Event {
     pub name: String,
@@ -22,6 +23,12 @@ pub struct EventFilter {
     pub interests: Vec<String>,
 }
 
+pub struct TimeDistance {
+    travel_duration: TimeDelta,
+    distance: Distance,
+}
+
+#[derive(Debug)]
 pub struct Distance {
     pub value: f64,
     pub unit: DistanceUnit,
@@ -57,6 +64,7 @@ impl Distance {
     }
 }
 
+#[derive(Debug)]
 pub enum DistanceUnit {
     Kilometer,
     Mile,
