@@ -1,7 +1,12 @@
-use std::env;
+use std::{env, sync::Arc};
 
+use axum::{
+    http::StatusCode,
+    routing::{get, post},
+    Router,
+};
 use clap::Parser;
-use sqlx::SqlitePool;
+use sqlx::{Pool, Sqlite, SqlitePool};
 
 use backend::Event;
 
@@ -13,16 +18,34 @@ struct Cli {
 
 #[derive(clap::Subcommand)]
 enum Commands {
+    Serve,
     Add { json: String },
     List,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // TODO http server receive requests
+    tracing_subscriber::fmt::init();
 
     let args = Cli::parse();
-    let pool = SqlitePool::connect(&env::var("DATABASE_URL")?).await?;
+
+    let pool = Arc::new(SqlitePool::connect(&env::var("DATABASE_URL")?).await?);
+
+    let app = Router::new()
+        .route(
+            "/list",
+            get({
+                let pool = Arc::clone(&pool);
+                move || list(pool)
+            }),
+        )
+        .route(
+            "/add",
+            post({
+                let pool = Arc::clone(&pool);
+                move |body| add(body, pool)
+            }),
+        );
 
     match &args.subcommand {
         Commands::Add { json } => {
@@ -30,27 +53,25 @@ async fn main() -> anyhow::Result<()> {
             parsed.add_event(&pool).await?;
         }
         Commands::List => {
-            list_events(&pool).await?;
+            Event::list_events(&pool).await?;
+        }
+        Commands::Serve => {
+            let listener = tokio::net::TcpListener::bind("0.0.0.0:8787").await?;
+            axum::serve(listener, app).await?;
         }
     }
 
     Ok(())
 }
 
-async fn list_events(pool: &SqlitePool) -> anyhow::Result<()> {
-    let recs = sqlx::query!(
-        r#"
-            SELECT id, name
-            FROM events
-            ORDER BY name
-        "#
-    )
-    .fetch_all(pool)
-    .await?;
+async fn list(pool: Arc<Pool<Sqlite>>) {
+    Event::list_events(&pool).await.unwrap();
+}
 
-    for rec in recs {
-        println!("[{}]: id: {}", rec.name, rec.id,);
-    }
+async fn add(axum::Json(payload): axum::Json<Event>, pool: Arc<Pool<Sqlite>>) -> StatusCode {
+    // let parsed: Event = serde_json::from_str(payload).unwrap();
+    payload.add_event(&pool).await.unwrap();
 
-    Ok(())
+    // (StatusCode::CREATED, axum::Json(event))
+    StatusCode::CREATED
 }
