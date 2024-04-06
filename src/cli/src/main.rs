@@ -1,5 +1,6 @@
 use chrono::TimeDelta;
 use clap::{Parser, Subcommand};
+use std::env;
 use std::process::exit;
 
 #[derive(Parser)]
@@ -30,7 +31,7 @@ enum Commands {
     Status {
         /// View the values of the API keys
         #[arg(long, short, action = clap::ArgAction::SetTrue)]
-        verbose: Option<bool>,
+        verbose: bool,
     },
 
     /// Update web crawler cache
@@ -75,9 +76,36 @@ fn main() {
         }
 
         Commands::Status { verbose } => {
-            if let Some(verbose) = verbose {
-                println!("verbose: {verbose}");
-                /* TODO */
+            /* TODO: database cache timestamp */
+            let openai_api_key = env::var("OPENAI_API_KEY");
+            let google_maps_api_key = env::var("GOOGLE_MAPS_API_KEY");
+
+            let mut err: bool = false;
+            if openai_api_key.is_ok() {
+                if *verbose {
+                    println!("OPENAI_API_KEY: {:?}", openai_api_key.unwrap());
+                } else {
+                    println!("OpenAI API key is valid");
+                }
+            } else {
+                println!("Error: OpenAI API key not found");
+                err = true;
+            }
+
+            if google_maps_api_key.is_ok() {
+                if *verbose {
+                    println!("GOOGLE_MAPS_API_KEY: {:?}", google_maps_api_key.unwrap());
+                } else {
+                    println!("Google Maps API key is valid");
+                }
+            } else {
+                println!("Error: Google Maps key not found");
+                err = true;
+            }
+
+            /* One or more missing keys */
+            if err {
+                exit(-1);
             }
         }
 
