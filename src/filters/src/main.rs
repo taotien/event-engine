@@ -25,11 +25,50 @@ async fn calculate_direction(
     Ok(directions)
 }
 
-fn main() {}
+#[tokio::main]
+async fn main() {
+    // Create a sample event
+    let event = Event {
+        name: String::from("Sample Event"),
+        start_time: Local::now(),
+        end_time: Local::now(),
+        location: String::from("2130 Fulton St, San Francisco, CA 94117"),
+        desc: String::from("Sample Description"),
+        price: 10,
+        tags: vec![String::from("tag1"), String::from("tag2")],
+        source: Url::parse("https://example.com").unwrap(),
+    };
+
+    // Create a sample event filter
+    let filter = EventFilter {
+        home_location: String::from("800 Great Hwy, San Francisco, CA 94121"),
+        transit_method: TravelMode::Driving,
+        max_radius_distance: Distance::from_kilometers(10.0),
+        max_radius_time: Duration::from_secs(3600),
+        interests: vec![String::from("interest1"), String::from("interest2")],
+    };
+
+    // Call the function and assert the result
+    assert_eq!(filter_event_by_travel_time(event, filter), true);
+}
 
 fn filter_event_by_travel_time(event: Event, filter: EventFilter) -> bool {
-    let google_maps_client =
-        GoogleMapsClient::try_new(&env::var("GOOGLE_MAPS_API_KEY").unwrap()).unwrap();
+    let google_maps_api_key = "AIzaSyCwZNWbKVWiqXWSvcZ8ObGYXdZu6bR1L54";
+    //  match env::var("GOOGLE_MAPS_API_KEY") {
+    //     Ok(api_key) => api_key,
+    //     Err(_) => {
+    //         println!("GOOGLE_MAPS_API_KEY environment variable is not set.");
+    //         return false;
+    //     }
+    // };
+
+    let google_maps_client = match GoogleMapsClient::try_new(&google_maps_api_key) {
+        Ok(client) => client,
+        Err(_) => {
+            println!("Failed to create GoogleMapsClient.");
+            return false;
+        }
+    };
 
     let direction = block_on(calculate_direction(
         &google_maps_client,
@@ -107,8 +146,8 @@ enum DistanceUnit {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_filter_event_by_travel_time() {
+    #[tokio::test]
+    async fn test_filter_event_by_travel_time() {
         // Create a sample event
         let event = Event {
             name: String::from("Sample Event"),
