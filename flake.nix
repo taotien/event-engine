@@ -16,6 +16,11 @@
     in
       with pkgs; rec {
         devShell = mkShell rec {
+          packages = [
+            python311
+            python311Packages.pip
+            python311Packages.virtualenv
+          ];
           buildInputs = [
             pkg-config
             openssl
