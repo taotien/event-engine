@@ -126,6 +126,8 @@ async fn main() {
     println!("{:#?}", config_place);
     /* TODO: Override default user config with use falgs if available */
 
+    let events = Event::get_events(&db_conn_pool).await.unwrap();
+
     // TODO: remove iCal json command test for cal.py
     let json = cnvt_event_to_json();
     println!("{}", json);
