@@ -6,14 +6,14 @@ use sqlx::{Pool, Sqlite, SqlitePool};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Event {
     pub name: String,
-    pub start_time: Option<String>,
-    pub end_time: Option<String>,
-    pub location: Option<String>,
-    pub description: Option<String>,
-    pub price: Option<String>,
-    pub tags: Option<Vec<String>>,
-    pub source: Option<String>,
-    pub check_list: Option<Vec<String>>,
+    pub start_time: String,
+    pub end_time: String,
+    pub location: String,
+    pub description: String,
+    pub price: String,
+    pub tags: Vec<String>,
+    pub source: String,
+    pub check_list: Vec<String>,
 }
 
 pub async fn init_pool() -> Arc<Pool<Sqlite>> {
@@ -41,27 +41,27 @@ impl Event {
             if let Some(t) = &r.tags {
                 tags = t.split(";").map(|s| s.to_owned()).collect();
             };
-            let tags = if !tags.is_empty() { Some(tags) } else { None };
+            // let tags = if !tags.is_empty() { Some(tags) } else { None };
 
             let mut check_list: Vec<String> = Vec::new();
             if let Some(c) = &r.tags {
                 check_list = c.split(";").map(|s| s.to_owned()).collect();
             };
-            let check_list = if !check_list.is_empty() {
-                Some(check_list)
-            } else {
-                None
-            };
+            // let check_list = if !check_list.is_empty() {
+            //     Some(check_list)
+            // } else {
+            //     None
+            // };
 
             Event {
                 name: r.name.clone(),
-                start_time: r.start_time.clone(),
-                end_time: r.end_time.clone(),
-                location: r.location.clone(),
-                description: r.description.clone(),
-                price: r.price.clone(),
+                start_time: r.start_time.clone().unwrap(),
+                end_time: r.end_time.clone().unwrap(),
+                location: r.location.clone().unwrap(),
+                description: r.description.clone().unwrap(),
+                price: r.price.clone().unwrap(),
                 tags,
-                source: r.source.clone(),
+                source: r.source.clone().unwrap(),
                 check_list,
             }
         });
@@ -112,13 +112,14 @@ impl Event {
     pub async fn add_event(&self, pool: &SqlitePool) -> anyhow::Result<i64> {
         let mut conn = pool.acquire().await?;
 
-        let tags: Option<String> = match &self.tags {
-            Some(t) => Some(t.join(";")),
-            None => None,
-        };
-        let source = self.source.clone().map(|u| u.to_string());
-        let check_list = self.check_list.clone().unwrap();
-        let check_list = check_list.join(";");
+        // let tags: Option<String> = match &self.tags {
+        //     Some(t) => Some(t.join(";")),
+        //     None => None,
+        // };
+        let tags = self.tags.join(";");
+        // let source = self.source.clone().map(|u| u.to_string());
+        // let check_list = self.check_list.clone().unwrap();
+        let check_list = self.check_list.join(";");
         let id = sqlx::query!(
             r#"
              INSERT INTO events ( name, start_time, end_time, location, description, price, tags, source, check_list )
@@ -131,7 +132,7 @@ impl Event {
             self.description,
             self.price,
             tags,
-            source,
+            self.source,
             check_list,
         )
         .execute(&mut *conn)
