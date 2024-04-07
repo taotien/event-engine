@@ -59,6 +59,7 @@ fn parse_config(path: PathBuf) -> Config {
     return config;
 }
 
+#[derive(Debug)]
 pub struct Place {
     location: String,
     transit: String,
@@ -67,17 +68,31 @@ pub struct Place {
 pub fn get_config() -> Place {
     let config = parse_config(get_config_file_path());
 
-    let place: Place = Place {
-        location: config.home.location,
-        transit: config.home.transit,
-    };
-
-    if config.main.start == "home" {
-        place.location = config.home.location;
-    } else if config.main.start == "school" {
-    } else if config.main.start == "work" {
-    } else {
+    let location: String;
+    let transit: String;
+    match config.main.start.as_str() {
+        "home" => {
+            location = config.home.location;
+            transit = config.home.transit;
+        }
+        "school" => {
+            location = config.school.location;
+            transit = config.school.transit;
+        }
+        "work" => {
+            location = config.work.location;
+            transit = config.work.transit;
+        }
+        _ => {
+            println!("Unsupported field");
+            exit(-1);
+        }
     }
+
+    let place = Place {
+        location: location,
+        transit: transit,
+    };
 
     return place;
 }
