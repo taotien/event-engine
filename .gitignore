@@ -5,3 +5,4 @@ venv
 **/credentials.json
 token.json
 cli/Cargo.lock
+crawler.log

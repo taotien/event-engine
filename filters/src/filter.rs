@@ -77,7 +77,7 @@ pub async fn filter_events(
             count += 1;
             println!("DEBUG FILTER {:?}", event);
             filtered_events.push(event.clone()); // Add the event to the vector if it matches the filter
-            if count > 10 {
+            if count > 100 {
                 break;
             }
         }
