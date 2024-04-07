@@ -1,3 +1,18 @@
+//! To set up your database, you will need to set up sqlx.
+//! Once that is set up, use the flake to set up your build and run environments, which sets your keys and database path
+//!
+//! To create your database, call `sqlx db create`
+//!
+//! Enter the backend directory and call `sqlx db migrate`
+//!
+//! If your API keys are set in the flake, you can begin populating the DB.
+//!
+//! Populating the db by starting `cargo run --bin backend -- serve`
+//!
+//! Run spider with python, and it should communicate with the db server
+//!
+//! Finally, you can call `cargo r --bin backend -- list` to dump the database and see if it's populated
+
 use std::{env, sync::Arc};
 
 use serde::{Deserialize, Serialize};
@@ -21,7 +36,7 @@ pub struct Event {
     pub check_list: Vec<String>,
 }
 
-/// initialize a connection pool to the sqlite database
+/// initialize a connection pool to the sqlite database. You can safely share the returned Arc when calling methods of Event.
 pub async fn init_pool() -> Arc<Pool<Sqlite>> {
     Arc::new(
         SqlitePool::connect(&env::var("DATABASE_URL").unwrap())
