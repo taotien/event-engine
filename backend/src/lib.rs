@@ -5,15 +5,15 @@ use sqlx::{Pool, Sqlite, SqlitePool};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Event {
-    name: String,
-    start_time: Option<String>,
-    end_time: Option<String>,
-    location: Option<String>,
-    description: Option<String>,
-    price: Option<String>,
-    tags: Option<Vec<String>>,
-    source: Option<String>,
-    check_list: Option<Vec<String>>,
+    pub name: String,
+    pub start_time: Option<String>,
+    pub end_time: Option<String>,
+    pub location: Option<String>,
+    pub description: Option<String>,
+    pub price: Option<String>,
+    pub tags: Option<Vec<String>>,
+    pub source: Option<String>,
+    pub check_list: Option<Vec<String>>,
 }
 
 pub async fn init_pool() -> Arc<Pool<Sqlite>> {

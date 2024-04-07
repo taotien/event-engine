@@ -55,7 +55,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::List => {
             // Event::print_events(&pool).await?;
             let events = Event::get_events(&pool).await;
-            println!("{:?}", events);
+            println!("{:#?}", events);
         }
         Commands::Serve => {
             let listener = tokio::net::TcpListener::bind("0.0.0.0:8787").await?;
