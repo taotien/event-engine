@@ -18,3 +18,4 @@ backend = { path = "../backend" }
 filters = { path = "../filters" }
 tokio = { version = "1.37.0", features = ["full"] }
 google_maps = "3.4.2"
+anyhow = "1.0.81"

@@ -7,7 +7,7 @@ use google_maps::directions::TravelMode;
 
 use backend::{init_pool, Event};
 use cli::config;
-use filters::filter::filter_events;
+use filters::{filter::filter_events, Distance};
 
 use cli::serialize::cnvt_event_to_json;
 use std::process::Command;
@@ -25,7 +25,7 @@ enum Commands {
     List {
         /// Maximum allowed straight line distance
         #[arg(short, long)]
-        radius: Option<u32>,
+        radius: Option<f64>,
 
         /// Transit methods: {walk|car|transit}
         #[arg(short, long)]
@@ -48,10 +48,11 @@ enum Commands {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let db_conn_pool = init_pool().await;
 
-    let max_travel_time: TimeDelta;
+    let max_travel_time: Option<TimeDelta>;
+    let max_radius: Option<Distance>;
     let mut config_place: config::Place = config::get_config();
 
     let cli = Cli::parse();
@@ -61,8 +62,12 @@ async fn main() {
             method,
             time,
         } => {
-            if let Some(max_radius) = radius {
-                println!("radius: {max_radius}");
+            let events = Event::get_events(&db_conn_pool).await?;
+
+            if let Some(radius) = radius {
+                max_radius = Some(Distance::from_kilometers(*radius));
+            } else {
+                max_radius = None;
             }
 
             let mut transit;
@@ -89,8 +94,21 @@ async fn main() {
             }
 
             if let Some(travel_time) = time.clone() {
-                max_travel_time = TimeDelta::minutes(travel_time);
+                max_travel_time = Some(TimeDelta::minutes(travel_time));
+            } else {
+                max_travel_time = None;
             }
+
+            let filtered = filter_events(
+                &events,
+                Some(config_place.location),
+                transit,
+                max_travel_time,
+                max_radius,
+                None,
+                None,
+                None,
+            );
         }
 
         Commands::Status { verbose } => {
@@ -129,4 +147,6 @@ async fn main() {
 
         Commands::Update {} => todo!(),
     }
+
+    Ok(())
 }
