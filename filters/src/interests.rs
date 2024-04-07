@@ -1,21 +1,24 @@
 use std::{env, vec};
 
-use crate::{Event, EventFilter};
 use async_openai::error::OpenAIError;
 use async_openai::types::{
     ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
     ChatCompletionResponseFormat, ChatCompletionResponseFormatType,
 };
+use backend::Event as backendEvent;
+
 use async_openai::Chat;
 use async_openai::{types::CreateChatCompletionRequestArgs, Client};
-use backend::Event as backendEvent;
 use chrono::DateTime;
 use chrono::Local;
 use serde_json::Value;
 use url::Url;
 
 //The float returned will be between 0.0 and 1.0 inclusive on both sides
-pub async fn relevance(event: Event, user_preferences: String) -> anyhow::Result<f32> {
+pub(crate) async fn relevance(
+    event: &backendEvent,
+    user_preferences: String,
+) -> anyhow::Result<f32> {
     // Create a OpenAI client with api key from env var OPENAI_API_KEY and default base url.
     let client = Client::new();
     // Create request using builder pattern
@@ -34,8 +37,8 @@ pub async fn relevance(event: Event, user_preferences: String) -> anyhow::Result
 
     let message = format!(
         "Please rate the relevance of the event: '{}' based on your preferences of: '{}'.",
-        event,
-        user_preferences.join(", ")
+        event_to_relevent_string(event),
+        user_preferences
     );
 
     //make request, system message instructs json standard. message instructs preferences and event details
@@ -75,6 +78,17 @@ pub async fn relevance(event: Event, user_preferences: String) -> anyhow::Result
     let relevance = relevance.max(0.0).min(1.0);
 
     Ok(relevance as f32)
+}
+
+fn event_to_relevent_string(event: &backendEvent) -> String {
+    let name = event.name;
+    let description = event.description;
+    let tags = event.tags.join(", ");
+
+    format!(
+        "name: {}, description: {}, tags: [{}]",
+        name, description, tags
+    )
 }
 
 #[cfg(test)]

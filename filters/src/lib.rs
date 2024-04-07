@@ -4,16 +4,16 @@ use std::fmt;
 use std::time::Duration;
 use url::Url;
 pub mod filter;
+pub mod good_data;
 pub mod interests;
 pub mod maps;
-pub mod good_data;
 
 pub struct TimeDistance {
     pub travel_duration: TimeDelta,
     pub distance: Distance,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub struct Distance {
     pub value: f64,
     pub unit: DistanceUnit,
@@ -54,8 +54,17 @@ impl Distance {
         }
     }
 }
+impl Eq for Distance {}
 
-#[derive(Debug)]
+impl Ord for Distance {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        let self_kilometers = self.to_kilometers();
+        let other_kilometers = other.to_kilometers();
+        self_kilometers.partial_cmp(&other_kilometers).unwrap()
+    }
+}
+
+#[derive(Debug, PartialEq, PartialOrd)]
 pub enum DistanceUnit {
     Kilometer,
     Mile,

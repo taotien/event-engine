@@ -4,7 +4,6 @@ use crate::TimeDistance;
 use backend::Event as backendEvent;
 use chrono::TimeDelta;
 use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime};
-use futures::executor::block_on;
 use google_maps::distance_matrix::response::Response;
 use google_maps::prelude::*;
 use serde_json;
@@ -14,7 +13,7 @@ use std::env;
 use std::fmt;
 use std::time::Duration;
 
-pub fn get_time_and_distance(
+pub(crate) async fn get_time_and_distance(
     origin: String,
     destination: String,
     transit_method: TravelMode,
@@ -29,15 +28,15 @@ pub fn get_time_and_distance(
         }
     };
 
-    let direction = block_on(get_distance_matrix(
+    let direction = get_distance_matrix(
         &google_maps_client,
         origin.clone(),
         destination.clone(),
         transit_method.clone(),
         arrival_time.clone(),
-    ));
+    );
 
-    match direction {
+    match direction.await {
         Ok(direction) => {
             if let Ok(parsed_direction) = parse_json_to_time_and_distance(&direction) {
                 return Ok(parsed_direction);
@@ -51,7 +50,7 @@ pub fn get_time_and_distance(
     }
 }
 
-pub fn parse_json_to_time_and_distance(
+fn parse_json_to_time_and_distance(
     responce: &DistanceMatrixResponse,
 ) -> Result<TimeDistance, serde_json::Error> {
     let parsed_json: Value = serde_json::from_str(&serde_json::to_string(&responce)?)?;
@@ -79,7 +78,7 @@ pub fn parse_json_to_time_and_distance(
     Ok(time_distance)
 }
 
-pub async fn get_distance_matrix(
+async fn get_distance_matrix(
     google_maps_client: &GoogleMapsClient,
     home: String,
     destination: String,
