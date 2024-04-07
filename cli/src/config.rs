@@ -1,11 +1,12 @@
-use dirs::config_dir;
-use serde::Deserialize;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::process::exit;
+
+use dirs::config_dir;
+use serde::Deserialize;
+
 use toml;
 
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Config {
     main: Main,
@@ -14,28 +15,24 @@ struct Config {
     work: Work,
 }
 
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Main {
     start: String,
-    transit: String,
+    transit: String, // TODO: subject to remove
 }
 
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Home {
     location: String,
     transit: String,
 }
 
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct School {
     location: String,
     transit: String,
 }
 
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Work {
     location: String,
@@ -59,7 +56,6 @@ fn parse_config(path: PathBuf) -> Config {
     return config;
 }
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Place {
     pub location: String,

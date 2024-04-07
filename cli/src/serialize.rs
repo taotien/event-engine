@@ -42,6 +42,7 @@ fn cnvt_event_to_ical_fmt(events: Vec<Event>) -> Vec<ICalJson> {
     ical_events
 }
 
+/// Events vector gets converted into serialized JSON format
 pub fn cnvt_event_to_json(events: Vec<Event>) -> String {
     let json_arr = cnvt_event_to_ical_fmt(events);
 
@@ -67,6 +68,5 @@ pub fn call_ical_util(events: Vec<Event>) {
     println!("output: {}", stdout.unwrap());
     println!("err: {}", stderr.unwrap());
 
-    // // TODO: err handling with exit status (i32)
-    // todo!()
+    // TODO: err handling with exit status (i32)
 }
