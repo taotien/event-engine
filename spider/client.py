@@ -18,8 +18,3 @@ class Client:
     def fetch(self):
         res = requests.get(url=self.__domain + "/list")
         print(f"fetch: {res.status_code}")
-
-
-if __name__ == '__main__':
-    c = Client()
-    c.push()

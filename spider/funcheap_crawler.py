@@ -2,6 +2,7 @@ import json
 import random
 import re
 import time
+from threading import Thread
 
 import requests
 from bs4 import BeautifulSoup as bs
@@ -11,8 +12,9 @@ from client import Client
 from crawler import Crawler
 
 
-class funcheapCrawler(Crawler):
+class FunCheapCrawler(Crawler, Thread):
     def __init__(self):
+        super().__init__(name="FunCheapCrawler")
         self.front_url = "https://sf.funcheap.com/events/san-francisco/"
         self.ls_url = "https://sf.funcheap.com/events/san-francisco/page/{page_num}/"
         self.headers = {
@@ -37,7 +39,7 @@ class funcheapCrawler(Crawler):
             page_soup = bs(page_res.text, 'lxml')
             for item in page_soup.select('#paged-list')[0].select('.entry-title a'):
                 self.detail_urls.append(item['href'])
-            time.sleep(random.uniform(0.1, 0.5))
+            time.sleep(random.uniform(0.1, 0.3))
 
     def detail_gen(self, url):
         retry_count = 0
@@ -51,7 +53,6 @@ class funcheapCrawler(Crawler):
             except Exception as e:
                 print(f"Request Error: {e}")
                 retry_count += 1
-                continue
 
         if res.status_code != 200:
             return ""
@@ -75,16 +76,16 @@ class funcheapCrawler(Crawler):
             try:
                 content = self.detail_gen(url)
                 events = json.loads(self.ai.parse(content=content))['events']
-                print(f"Pushing events for source: [{url}]")
+                print(f"[{self.name}]Pushing events from source: [{url}]")
                 for idx, event in events.items():
-                    print(f">Adding event [{idx}][{event}]")
+                    print(f"[{self.name}]Adding event [{idx}][{event}]")
                     self.client.push(event)
-                time.sleep(random.uniform(0.1, 0.5))
+                time.sleep(random.uniform(0.1, 0.3))
             except Exception as e:
                 print(e)
         self.client.fetch()
 
 
 if __name__ == '__main__':
-    fc = funcheapCrawler()
+    fc = FunCheapCrawler()
     fc.run()

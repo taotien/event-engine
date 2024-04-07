@@ -50,7 +50,8 @@ class AIParser:
                                                     // location should be STRING ONLY
                                                     // tags are related labels you summarized based on the content
                                                     // source will always be the one I send in the content
-                                                    // all time are in unix timestamp format
+                                                    // all time should be in format YYYY,MM,DD,HH,MM,SS
+                                                    // change YEAR to 2024 if it is smaller than 2024, ONLY use YEAR >= 2024
                                                 }
                                             }
                                             CONTENT TO SUMMARIZE AND TO EXTRACT:  %s""" % content

@@ -1,6 +1,7 @@
 import json
 import random
 import time
+from threading import Thread
 
 import requests
 from bs4 import BeautifulSoup as bs
@@ -10,8 +11,9 @@ from client import Client
 from crawler import Crawler
 
 
-class USFCrawler(Crawler):
+class USFCrawler(Crawler, Thread):
     def __init__(self):
+        super().__init__(name="USFCrawler")
         self.__domain = "https://www.usfca.edu"
         self.__ls_url = "https://www.usfca.edu/life-usf/events?viewsreference[enabled_settings][argument]=argument&page={page_num}"
         self.__headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"}
@@ -32,13 +34,13 @@ class USFCrawler(Crawler):
                 break
             for url in detail_urls[5:]:
                 self.__detail_urls.append(url)
-            time.sleep(random.uniform(0.1, 0.5))
+            time.sleep(random.uniform(0.1, 0.3))
             page_num += 1
 
     def detail_gen(self, url):
 
         res = requests.get(url=url, headers=self.__headers)
-        time.sleep(random.uniform(0.1, 0.5))
+        time.sleep(random.uniform(0.1, 0.3))
 
         # parse details
         soup = bs(res.text, 'lxml')
@@ -58,14 +60,14 @@ class USFCrawler(Crawler):
                 content = self.detail_gen(url)
 
                 events = json.loads(self.__ai.parse(content=content))['events']
-                print(f"Pushing events for source: [{url}]")
+                print(f"[{self.name}]Pushing events for source: [{url}]")
                 for idx, event in events.items():
-                    print(f">Adding event [{idx}][{event}]")
+                    print(f"[{self.name}]Adding event [{idx}][{event}]")
                     self.__client.push(event)
-                time.sleep(random.uniform(0.1, 0.5))
+                time.sleep(random.uniform(0.1, 0.3))
             except Exception as e:
                 print(e)
-                continue
+
         self.__client.fetch()
 
 
