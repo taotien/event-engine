@@ -8,13 +8,14 @@ use async_openai::types::{
 };
 use async_openai::Chat;
 use async_openai::{types::CreateChatCompletionRequestArgs, Client};
+use backend::Event as backendEvent;
 use chrono::DateTime;
 use chrono::Local;
 use serde_json::Value;
 use url::Url;
 
 //The float returned will be between 0.0 and 1.0 inclusive on both sides
-pub async fn relevance(event: Event, user_preferences: Vec<String>) -> anyhow::Result<f32> {
+pub async fn relevance(event: Event, user_preferences: String) -> anyhow::Result<f32> {
     // Create a OpenAI client with api key from env var OPENAI_API_KEY and default base url.
     let client = Client::new();
     // Create request using builder pattern

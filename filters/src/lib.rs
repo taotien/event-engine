@@ -3,54 +3,10 @@ use google_maps::prelude::*;
 use std::fmt;
 use std::time::Duration;
 use url::Url;
+pub mod filter;
 pub mod interests;
 pub mod maps;
-
-pub struct Event {
-    pub name: String,
-    pub start_time: DateTime<Local>,
-    pub end_time: DateTime<Local>,
-    pub location: String,
-    pub desc: String,
-    pub price: u64,
-    pub tags: Vec<String>,
-    pub source: Url,
-}
-
-impl fmt::Display for Event {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let tags_str = self.tags.join(", ");
-        write!(
-            f,
-            "Event {{
-        name: {},
-    start_time: {:?},
-        end_time: {:?},
-        location: {},
-        desc: {},
-        price: {},
-        tags: {},
-        source: {:?},
-    }}",
-            self.name,
-            self.start_time,
-            self.end_time,
-            self.location,
-            self.desc,
-            self.price,
-            tags_str,
-            self.source
-        )
-    }
-}
-
-pub struct EventFilter {
-    pub home_location: String,
-    pub transit_method: TravelMode,
-    pub max_radius_distance: Distance,
-    pub max_radius_time: Duration,
-    pub interests: Vec<String>,
-}
+pub mod good_data;
 
 pub struct TimeDistance {
     pub travel_duration: TimeDelta,

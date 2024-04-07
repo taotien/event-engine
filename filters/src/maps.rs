@@ -1,8 +1,7 @@
 use crate::Distance;
 use crate::DistanceUnit;
-use crate::Event;
-use crate::EventFilter;
 use crate::TimeDistance;
+use backend::Event as backendEvent;
 use chrono::TimeDelta;
 use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime};
 use futures::executor::block_on;
