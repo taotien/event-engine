@@ -3,7 +3,7 @@ use std::{env, sync::Arc};
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Sqlite, SqlitePool};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Event {
     pub name: String,
     /// time in format YYYY,DD,MM,HH,MM,SS

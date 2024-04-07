@@ -16,8 +16,8 @@ pub async fn filter_events(
     interests: Option<String>,
     interest_threshold: Option<f32>,
     max_acceptable_price: Option<u8>,
-) -> Vec<&Event> {
-    let mut filtered_events: Vec<&Event> = Vec::new(); // Create an empty vector to store filtered events
+) -> Vec<Event> {
+    let mut filtered_events: Vec<Event> = Vec::new(); // Create an empty vector to store filtered events
 
     let mut count = 0;
     for event in events {
@@ -39,6 +39,7 @@ pub async fn filter_events(
             if count > 10 {
                 break;
             }
+            filtered_events.push(event.clone()); // Add the event to the vector if it matches the filter
         }
     }
     filtered_events // Return the filtered events vector

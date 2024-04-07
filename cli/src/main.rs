@@ -7,10 +7,10 @@ use google_maps::directions::TravelMode;
 
 use backend::{init_pool, Event};
 use cli::config;
-use filters::{filter::filter_events, Distance};
-
 use cli::serialize::cnvt_event_to_json;
-use std::process::Command;
+use filters::{filter::filter_events, Distance};
+use cli::serialize::call_ical_util;
+use filters::{filter::filter_events, Distance};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -119,6 +119,9 @@ async fn main() -> anyhow::Result<()> {
             .await;
 
             println!("{:#?}", filtered);
+        }
+
+            call_ical_util(filtered);
         }
 
         Commands::Status { verbose } => {
