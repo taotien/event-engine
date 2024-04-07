@@ -26,6 +26,7 @@
             openssl
           ];
           LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
+          DATABASE_URL = "sqlite:/home/tao/projects/event-aggregator/data/events.db";
         };
       });
 }
