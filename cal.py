@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import sys
 from datetime import datetime
@@ -8,15 +9,27 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+logging.basicConfig(level=logging.INFO,
+                    format='%(filename)s %(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    filename='crawler.log', filemode='a')
+
 
 class CalendarParser:
+    """
+    Read event data in json format, parse and inject them into user's Google calendar
+    """
     def __init__(self):
         self.__creds = None
         self.__service = None
         self.__event = None
         self.setup()
 
+        self.__logger = logging.getLogger(__name__)
+
     def setup(self):
+        """
+        Read user token files to create service instance of Google calendar.
+        """
         # Set up Google Calendar API access
         SCOPES = ['https://www.googleapis.com/auth/calendar']
         self.__creds = None
@@ -40,6 +53,15 @@ class CalendarParser:
         self.__service = build('calendar', 'v3', credentials=self.__creds)
 
     def parse(self, data):
+        """
+        Parse single event data, inject it into user's calendar as an event instance.
+
+        Args:
+            data(dict): event data as dictionary, parsed from command line by caller
+
+        Return:
+            None
+        """
         check_list = "\n".join([f"({str(idx+1)})" + item for idx, item in enumerate(data.get("check_list"))])
         desc = f'[DESCRIPTION]\n{data.get("description")}\n[CHECK_LIST]\n{check_list}\n[PRICE]\n{data.get("price")}\n[SOURCE]\n{data.get("source")}\n'
 
@@ -52,7 +74,6 @@ class CalendarParser:
 
         end_date_time = datetime.strptime(end_time, '%Y,%m,%d,%H,%M,%S')
         end_timestamp = int(end_date_time.timestamp())
-
 
         # Create the event
         self.__event = {
@@ -70,9 +91,11 @@ class CalendarParser:
         }
 
     def register(self):
-        # Call the API to insert the event
+        """
+        Insert event instance into Google calendar.
+        """
         self.__event = self.__service.events().insert(calendarId='primary', body=self.__event).execute()
-        print('Event created: %s' % (self.__event.get('htmlLink')))
+        self.__logger.info('Event created: %s' % (self.__event.get('htmlLink')))
 
 
 if __name__ == '__main__':
@@ -86,9 +109,3 @@ if __name__ == '__main__':
     for data in data_ls:
         cal.parse(data)
         cal.register()
-
-
-
-
-
-

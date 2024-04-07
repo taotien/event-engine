@@ -17,6 +17,9 @@ logging.basicConfig(level=logging.INFO,
 
 
 class USFCrawler(Crawler, Thread):
+    """
+    A thread of spider to scrape data from https://www.usfca.edu/life-usf/events.
+    """
     def __init__(self):
         super().__init__(name="USFCrawler")
         self.__domain = "https://www.usfca.edu"
@@ -29,6 +32,9 @@ class USFCrawler(Crawler, Thread):
         self.__logger = logging.getLogger(__name__)
 
     def list_gen(self):
+        """
+        Iterate all list pages, save detail pages' urls into memory.
+        """
         page_num = 1
         while True:
             url = self.__ls_url.format(page_num=page_num)
@@ -45,6 +51,15 @@ class USFCrawler(Crawler, Thread):
             page_num += 1
 
     def detail_gen(self, url):
+        """
+        Scrape single detail page and parse core contents.
+
+        Args:
+            url(str): url of the detail page
+
+        Return:
+            content(str): detail page content in string format
+        """
         retry_count = 0
         while retry_count < 3:
             self.__logger.info(f"Requesting Detail Page: [{url}]")
@@ -70,6 +85,9 @@ class USFCrawler(Crawler, Thread):
         return content
 
     def run(self):
+        """
+        Override the run() in Thread, initiate a new thread for the spider and start scraping.
+        """
         self.list_gen()
         for url in self.__detail_urls:
             try:
