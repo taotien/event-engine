@@ -7,7 +7,7 @@ use cli::config;
 
 use backend::{init_pool, Event};
 
-use cli::serialize::print_event_as_json;
+use cli::serialize::cnvt_event_to_json;
 use std::process::Command;
 
 #[derive(Parser)]
@@ -127,7 +127,7 @@ async fn main() {
     /* TODO: Override default user config with use falgs if available */
 
     // TODO: remove iCal json command test for cal.py
-    let json = print_event_as_json();
+    let json = cnvt_event_to_json();
     println!("{}", json);
 
     let output = Command::new("python")

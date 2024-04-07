@@ -1,7 +1,13 @@
 use std::process::Command;
 
 use serde::Serialize;
+
 use backend::Event;
+
+#[derive(Serialize, Debug)]
+struct JsonArray {
+    events: Vec<ICalJson>,
+}
 
 #[derive(Serialize, Debug, Clone)]
 struct ICalJson {
@@ -35,17 +41,12 @@ fn cnvt_event_to_ical_fmt(events: Vec<Event>) -> Vec<ICalJson> {
     ical_events
 }
 
-#[derive(Serialize, Debug)]
-struct JsonArray {
-    events: Vec<ICalJson>,
-}
-
-pub fn print_event_as_json() -> String {
+pub fn cnvt_event_to_json() -> String {
     let json_arr = cnvt_event_to_ical_fmt(todo!());
 
     /* Serialize struct to a JSON list string */
     let json_arr = serde_json::to_string(&json_arr).unwrap();
 
-    /* insert top level key to ensure JSON format is valid */
+    /* Insert top level key to ensure JSON format is valid */
     format!("{{\"events\": {}}}", json_arr)
 }
