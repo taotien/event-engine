@@ -1,6 +1,7 @@
 use std::process::Command;
 
 use serde::Serialize;
+use backend::Event;
 
 #[derive(Serialize, Debug, Clone)]
 struct ICalJson {
@@ -14,26 +15,33 @@ struct ICalJson {
     source: String,
 }
 
+fn cnvt_event_to_ical_fmt(events: Vec<Event>) -> Vec<ICalJson> {
+    let mut ical_events: Vec<ICalJson> = Vec::new();
+    for event in events {
+        let ical_event = ICalJson {
+            name: event.name,
+            location: event.location,
+            start_time: event.start_time,
+            end_time: event.end_time,
+            check_list: event.check_list,
+            description: event.description,
+            price: event.price,
+            source: event.source,
+        };
+
+        ical_events.push(ical_event);
+    }
+
+    ical_events
+}
+
 #[derive(Serialize, Debug)]
 struct JsonArray {
     events: Vec<ICalJson>,
 }
 
 pub fn print_event_as_json() -> String {
-    // TODO: remove test dummy data
-    let ical_json = ICalJson {
-        name: "Yiyu's coffee shop".to_owned(),
-        location: "123 Foobar Ave".to_owned(),
-        start_time: "2024,04,06,19,30,00".to_owned(),
-        end_time: "2024,04,06,21,30,00".to_owned(),
-        check_list: vec!["camera".to_owned(), "money".to_owned()],
-        description: "This is a description".to_owned(),
-        price: "100".to_owned(),
-        source: "https://www.example.org/".to_owned(),
-    };
-
-    /* Serialize struct to a JSON string */
-    let json_arr = vec![ical_json.clone(), ical_json];
+    let json_arr = cnvt_event_to_ical_fmt(todo!());
 
     /* Serialize struct to a JSON list string */
     let json_arr = serde_json::to_string(&json_arr).unwrap();
