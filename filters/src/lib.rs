@@ -10,7 +10,7 @@ pub struct TimeDistance {
     pub distance: Distance,
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Distance {
     pub value: f64,
     pub unit: DistanceUnit,
@@ -61,7 +61,7 @@ impl Ord for Distance {
     }
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum DistanceUnit {
     Kilometer,
     Mile,

@@ -1,11 +1,9 @@
 use crate::Distance;
 use crate::DistanceUnit;
 use crate::TimeDistance;
-use chrono::NaiveDateTime;
 use chrono::TimeDelta;
 use google_maps::distance_matrix::response::Response;
 use google_maps::prelude::*;
-use serde_json;
 use serde_json::Value;
 use std::env;
 
