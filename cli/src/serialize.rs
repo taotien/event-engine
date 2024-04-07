@@ -21,6 +21,7 @@ struct ICalJson {
     source: String,
 }
 
+/// Converts backend::Event types into ICalJson
 fn cnvt_event_to_ical_fmt(events: Vec<Event>) -> Vec<ICalJson> {
     let mut ical_events: Vec<ICalJson> = Vec::new();
     for event in events {
@@ -50,6 +51,8 @@ pub fn cnvt_event_to_json(events: Vec<Event>) -> String {
     /* Insert top level key to ensure JSON format is valid */
     format!("{{\"events\": {}}}", json_arr)
 }
+
+/// Calls external python utility cal.py
 pub fn call_ical_util(events: Vec<Event>) {
     let json = cnvt_event_to_json(events);
     // TODO: fix hardcoded python program path

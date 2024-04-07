@@ -7,8 +7,6 @@ use google_maps::directions::TravelMode;
 
 use backend::{init_pool, Event};
 use cli::config;
-use cli::serialize::cnvt_event_to_json;
-use filters::{filter::filter_events, Distance};
 use cli::serialize::call_ical_util;
 use filters::{filter::filter_events, Distance};
 
@@ -117,9 +115,6 @@ async fn main() -> anyhow::Result<()> {
                 Some(100),
             )
             .await;
-
-            println!("{:#?}", filtered);
-        }
 
             call_ical_util(filtered);
         }

@@ -35,11 +35,10 @@ pub async fn filter_events(
         {
             count += 1;
             println!("PUSHPUSHPSUH {:?}", event);
-            filtered_events.push(event); // Add the event to the vector if it matches the filter
+            filtered_events.push(event.clone()); // Add the event to the vector if it matches the filter
             if count > 10 {
                 break;
             }
-            filtered_events.push(event.clone()); // Add the event to the vector if it matches the filter
         }
     }
     filtered_events // Return the filtered events vector
@@ -75,12 +74,12 @@ async fn event_filter(
         }
     }
 
-    if interests.is_some() && interest_threshold.is_some() {
-        if !with_interests(&interests.unwrap(), interest_threshold.unwrap(), event).await {
-            println!("no interests found");
-            return false;
-        }
-    }
+    // if interests.is_some() && interest_threshold.is_some() {
+    //     if !with_interests(&interests.unwrap(), interest_threshold.unwrap(), event).await {
+    //         println!("no interests found");
+    //         return false;
+    //     }
+    // }
 
     if max_acceptable_price.is_some() {
         if !with_price(max_acceptable_price.unwrap(), event.price.clone()) {
@@ -93,7 +92,7 @@ async fn event_filter(
 
 fn with_price(max_acceptable_price: u8, event_price: String) -> bool {
     match event_price.parse::<u8>() {
-        Ok(parsed_price) => parsed_price >= max_acceptable_price,
+        Ok(parsed_price) => parsed_price <= max_acceptable_price,
         Err(e) => {
             eprintln!("{}", e);
             false
