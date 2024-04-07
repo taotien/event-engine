@@ -10,9 +10,6 @@ from googleapiclient.discovery import build
 
 
 class CalendarParser:
-    """
-    '{"name": "Crazy Funny Asians Comedy Showcase (SF)","start_time": "1748505600","end_time": "1748516400","location": "Neck of The Woods | 406 Clement Street, San Francisco, CA Richmond District, San Francisco","description": "Inspired by the blockbuster movie, see some of the Bay Area'"'"'s top comedians at San Francisco'"'"'s Crazy Funny Asians comedy showcase, presented by Funcheap and HellaFunny. Let'"'"'s celebrate the Bay'"'"'s Asian-American culture and heritage with laughs.","check_list": ["Eventbrite RSVP", "Donations appreciated - bring cash", "Two-drink minimum"],"price": "0","tags": ["Comedy", "Asian-American", "Bay Area"],"source": "https://sf.funcheap.com/crazy-funny-asians-comedy-showcase-sf-218/"}'
-    """
     def __init__(self):
         self.__creds = None
         self.__service = None
@@ -43,21 +40,31 @@ class CalendarParser:
         self.__service = build('calendar', 'v3', credentials=self.__creds)
 
     def parse(self, data):
-        event_data = json.loads(data)
-        check_list = "\n".join([f"({str(idx+1)})" + item for idx, item in enumerate(event_data.get("check_list"))])
-        desc = f'[DESCRIPTION]\n{event_data.get("description")}\n[CHECK_LIST]\n{check_list}\n[PRICE]\n{event_data.get("price")}\n[SOURCE]\n{event_data.get("source")}\n'
+        check_list = "\n".join([f"({str(idx+1)})" + item for idx, item in enumerate(data.get("check_list"))])
+        desc = f'[DESCRIPTION]\n{data.get("description")}\n[CHECK_LIST]\n{check_list}\n[PRICE]\n{data.get("price")}\n[SOURCE]\n{data.get("source")}\n'
+
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+
+        # Parse the string into a datetime object
+        start_date_time = datetime.strptime(start_time, '%Y,%m,%d,%H,%M,%S')
+        start_timestamp = int(start_date_time.timestamp())
+
+        end_date_time = datetime.strptime(end_time, '%Y,%m,%d,%H,%M,%S')
+        end_timestamp = int(end_date_time.timestamp())
+
 
         # Create the event
         self.__event = {
-            'summary': event_data.get('name', ''),
-            'location': event_data.get('location', ''),
+            'summary': data.get('name', ''),
+            'location': data.get('location', ''),
             'description': desc,
             'start': {
-                'dateTime': datetime.utcfromtimestamp(int(event_data.get('start_time'))).isoformat() + 'Z',
+                'dateTime': datetime.utcfromtimestamp(start_timestamp).isoformat() + 'Z',
                 'timeZone': 'America/Los_Angeles',
             },
             'end': {
-                'dateTime': datetime.utcfromtimestamp(int(event_data.get('end_time'))).isoformat() + 'Z',
+                'dateTime': datetime.utcfromtimestamp(end_timestamp).isoformat() + 'Z',
                 'timeZone': 'America/Los_Angeles',
             },
         }
@@ -73,10 +80,11 @@ if __name__ == '__main__':
         print("Usage: python3 cal.py <json-format-str>")
         exit(1)
     cal = CalendarParser()
-    data = sys.argv[1]
+    datas = sys.argv[1]
 
-    cal.parse(data)
-    cal.register()
+    for data in datas:
+        cal.parse(data)
+        cal.register()
 
 
 
