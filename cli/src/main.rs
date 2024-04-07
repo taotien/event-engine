@@ -34,6 +34,10 @@ enum Commands {
         /// Maximum allowed travel time in minutes
         #[arg(short, long)]
         time: Option<i64>,
+
+        /// Interests keywords
+        #[arg(short, long)]
+        interests: Option<String>,
     },
 
     /// Check status
@@ -61,6 +65,7 @@ async fn main() -> anyhow::Result<()> {
             radius,
             method,
             time,
+            interests,
         } => {
             let events = Event::get_events(&db_conn_pool).await?;
 
@@ -81,17 +86,16 @@ async fn main() -> anyhow::Result<()> {
                 println!("Error: unsupported transit method");
                 exit(-1);
             }
-
-            if config_place.transit == "walk" {
-                transit = Some(TravelMode::Walking);
-            } else if config_place.transit == "car" {
-                transit = Some(TravelMode::Driving);
-            } else if config_place.transit == "transit" {
-                transit = Some(TravelMode::Transit);
-            } else {
-                println!("Error: unsupported transit method");
-                exit(-1);
-            }
+            // if method == "walk" {
+            //     transit = Some(TravelMode::Walking);
+            // } else if method == "car" {
+            //     transit = Some(TravelMode::Driving);
+            // } else if method == "transit" {
+            //     transit = Some(TravelMode::Transit);
+            // } else {
+            //     println!("Error: unsupported transit method");
+            //     exit(-1);
+            // }
 
             if let Some(travel_time) = time.clone() {
                 max_travel_time = Some(TimeDelta::minutes(travel_time));
@@ -105,10 +109,11 @@ async fn main() -> anyhow::Result<()> {
                 transit,
                 max_travel_time,
                 max_radius,
+                interests.clone(),
                 None,
                 None,
-                None,
-            );
+            )
+            .await;
         }
 
         Commands::Status { verbose } => {
