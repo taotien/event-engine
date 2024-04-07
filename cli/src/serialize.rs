@@ -36,5 +36,8 @@ pub fn print_event_as_json() -> String {
     let json_arr = vec![ical_json.clone(), ical_json];
 
     /* Serialize struct to a JSON list string */
-    serde_json::to_string(&json_arr).unwrap()
+    let json_arr = serde_json::to_string(&json_arr).unwrap();
+
+    /* insert top level key to ensure JSON format is valid */
+    format!("{{\"events\": {}}}", json_arr)
 }

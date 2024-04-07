@@ -81,8 +81,9 @@ if __name__ == '__main__':
         exit(1)
     cal = CalendarParser()
     datas = sys.argv[1]
+    data_ls = json.loads(datas)['events']
 
-    for data in datas:
+    for data in data_ls:
         cal.parse(data)
         cal.register()
 
