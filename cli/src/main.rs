@@ -7,6 +7,9 @@ use cli::config;
 
 use backend::{init_pool, Event};
 
+use cli::serialize::print_event_as_json;
+use std::process::Command;
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
@@ -122,6 +125,21 @@ async fn main() {
     let config_place: config::Place = config::get_config();
     println!("{:#?}", config_place);
     /* TODO: Override default user config with use falgs if available */
+
+    // TODO: remove iCal json command test for cal.py
+    let json = print_event_as_json();
+    println!("{}", json);
+
+    let output = Command::new("python")
+        .arg("/home/yiyu/event-aggregator/cal.py")
+        .arg(json)
+        .output()
+        .expect("failed to execute process");
+
+    let o = String::from_utf8(output.stdout);
+    let e = String::from_utf8(output.stderr);
+    println!("output: {}", o.unwrap());
+    println!("err: {}", e.unwrap());
 
     /* TODO: call backend */
 }
