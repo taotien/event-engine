@@ -59,7 +59,7 @@ async fn main() -> anyhow::Result<()> {
 
     let max_travel_time: Option<TimeDelta>;
     let max_radius: Option<Distance>;
-    let mut config_place: config::Place = config::get_config();
+    let config_place: config::Place = config::get_config();
 
     let cli = Cli::parse();
     match &cli.command {
