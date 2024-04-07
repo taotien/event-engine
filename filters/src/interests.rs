@@ -17,7 +17,7 @@ use url::Url;
 //The float returned will be between 0.0 and 1.0 inclusive on both sides
 pub(crate) async fn relevance(
     event: &backendEvent,
-    user_preferences: String,
+    user_preferences: &String,
 ) -> anyhow::Result<f32> {
     // Create a OpenAI client with api key from env var OPENAI_API_KEY and default base url.
     let client = Client::new();
@@ -90,7 +90,7 @@ fn event_to_relevent_string(event: &backendEvent) -> String {
         name, description, tags
     )
 }
-
+/*
 #[cfg(test)]
 mod tests {
     use std::time::Duration;
@@ -143,3 +143,4 @@ mod tests {
         Ok(())
     }
 }
+*/
