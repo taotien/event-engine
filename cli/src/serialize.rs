@@ -2,7 +2,7 @@ use std::process::Command;
 
 use serde::Serialize;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 struct ICalJson {
     name: String,
     location: String,
@@ -12,6 +12,11 @@ struct ICalJson {
     description: String,
     price: String,
     source: String,
+}
+
+#[derive(Serialize, Debug)]
+struct JsonArray {
+    events: Vec<ICalJson>,
 }
 
 pub fn print_event_as_json() -> String {
@@ -28,5 +33,8 @@ pub fn print_event_as_json() -> String {
     };
 
     /* Serialize struct to a JSON string */
-    serde_json::to_string(&ical_json).unwrap()
+    let json_arr = vec![ical_json.clone(), ical_json];
+
+    /* Serialize struct to a JSON list string */
+    serde_json::to_string(&json_arr).unwrap()
 }
