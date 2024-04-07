@@ -6,16 +6,22 @@ use sqlx::{Pool, Sqlite, SqlitePool};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Event {
     pub name: String,
+    /// time in format YYYY,DD,MM,HH,MM,SS
     pub start_time: String,
+    /// time in format YYYY,DD,MM,HH,MM,SS
     pub end_time: String,
+    /// address that google maps can understand
     pub location: String,
     pub description: String,
     pub price: String,
     pub tags: Vec<String>,
+    /// url of the source we scraped from
     pub source: String,
+    /// list of things you should prepare before you go
     pub check_list: Vec<String>,
 }
 
+/// initialize a connection pool to the sqlite database
 pub async fn init_pool() -> Arc<Pool<Sqlite>> {
     Arc::new(
         SqlitePool::connect(&env::var("DATABASE_URL").unwrap())
