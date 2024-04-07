@@ -41,8 +41,8 @@ fn cnvt_event_to_ical_fmt(events: Vec<Event>) -> Vec<ICalJson> {
     ical_events
 }
 
-pub fn cnvt_event_to_json() -> String {
-    let json_arr = cnvt_event_to_ical_fmt(todo!());
+pub fn cnvt_event_to_json(events: Vec<Event>) -> String {
+    let json_arr = cnvt_event_to_ical_fmt(events);
 
     /* Serialize struct to a JSON list string */
     let json_arr = serde_json::to_string(&json_arr).unwrap();

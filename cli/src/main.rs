@@ -86,16 +86,19 @@ async fn main() -> anyhow::Result<()> {
                 println!("Error: unsupported transit method");
                 exit(-1);
             }
-            // if method == "walk" {
-            //     transit = Some(TravelMode::Walking);
-            // } else if method == "car" {
-            //     transit = Some(TravelMode::Driving);
-            // } else if method == "transit" {
-            //     transit = Some(TravelMode::Transit);
-            // } else {
-            //     println!("Error: unsupported transit method");
-            //     exit(-1);
-            // }
+
+            if let Some(meth) = method {
+                if meth == "walk" {
+                    transit = Some(TravelMode::Walking);
+                } else if meth == "car" {
+                    transit = Some(TravelMode::Driving);
+                } else if meth == "transit" {
+                    transit = Some(TravelMode::Transit);
+                } else {
+                    println!("Error: unsupported transit meth");
+                    exit(-1);
+                }
+            }
 
             if let Some(travel_time) = time.clone() {
                 max_travel_time = Some(TimeDelta::minutes(travel_time));
