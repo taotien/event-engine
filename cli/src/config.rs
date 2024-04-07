@@ -62,8 +62,8 @@ fn parse_config(path: PathBuf) -> Config {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Place {
-    location: String,
-    transit: String,
+    pub location: String,
+    pub transit: String,
 }
 
 pub fn get_config() -> Place {

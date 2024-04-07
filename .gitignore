@@ -3,3 +3,4 @@
 data
 venv
 **/credentials.json
+cli/Cargo.lock

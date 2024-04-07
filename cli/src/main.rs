@@ -3,9 +3,11 @@ use std::process::exit;
 
 use chrono::TimeDelta;
 use clap::{Parser, Subcommand};
-use cli::config;
+use google_maps::directions::TravelMode;
 
 use backend::{init_pool, Event};
+use cli::config;
+use filters::filter::filter_events;
 
 use cli::serialize::cnvt_event_to_json;
 use std::process::Command;
@@ -50,6 +52,7 @@ async fn main() {
     let db_conn_pool = init_pool().await;
 
     let max_travel_time: TimeDelta;
+    let mut config_place: config::Place = config::get_config();
 
     let cli = Cli::parse();
     match &cli.command {
@@ -62,26 +65,31 @@ async fn main() {
                 println!("radius: {max_radius}");
             }
 
-            if let Some(transit_method) = method {
-                if transit_method == "walk" {
-                    println!("Transit method: walking");
-                    /* TODO */
-                } else if transit_method == "car" {
-                    println!("Transit method: car");
-                    /* TODO */
-                } else if transit_method == "transit" {
-                    println!("Transit method: public transit");
-                    /* TODO */
-                } else {
-                    println!("Error: unsupported transit method");
-                    exit(-1);
-                }
+            let mut transit;
+            if config_place.transit == "walk" {
+                transit = Some(TravelMode::Walking);
+            } else if config_place.transit == "car" {
+                transit = Some(TravelMode::Driving);
+            } else if config_place.transit == "transit" {
+                transit = Some(TravelMode::Transit);
+            } else {
+                println!("Error: unsupported transit method");
+                exit(-1);
+            }
+
+            if config_place.transit == "walk" {
+                transit = Some(TravelMode::Walking);
+            } else if config_place.transit == "car" {
+                transit = Some(TravelMode::Driving);
+            } else if config_place.transit == "transit" {
+                transit = Some(TravelMode::Transit);
+            } else {
+                println!("Error: unsupported transit method");
+                exit(-1);
             }
 
             if let Some(travel_time) = time.clone() {
                 max_travel_time = TimeDelta::minutes(travel_time);
-                println!("Maximum travel time: {}", max_travel_time);
-                /* TODO */
             }
         }
 
@@ -121,27 +129,4 @@ async fn main() {
 
         Commands::Update {} => todo!(),
     }
-
-    let config_place: config::Place = config::get_config();
-    println!("{:#?}", config_place);
-    /* TODO: Override default user config with use falgs if available */
-
-    let events = Event::get_events(&db_conn_pool).await.unwrap();
-
-    // TODO: remove iCal json command test for cal.py
-    let json = cnvt_event_to_json();
-    println!("{}", json);
-
-    let output = Command::new("python")
-        .arg("/home/yiyu/event-aggregator/cal.py")
-        .arg(json)
-        .output()
-        .expect("failed to execute process");
-
-    let o = String::from_utf8(output.stdout);
-    let e = String::from_utf8(output.stderr);
-    println!("output: {}", o.unwrap());
-    println!("err: {}", e.unwrap());
-
-    /* TODO: call backend */
 }
