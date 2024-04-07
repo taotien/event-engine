@@ -50,3 +50,21 @@ pub fn cnvt_event_to_json(events: Vec<Event>) -> String {
     /* Insert top level key to ensure JSON format is valid */
     format!("{{\"events\": {}}}", json_arr)
 }
+
+pub fn call_ical_util(events: Vec<Event>) -> i32 {
+    let json = cnvt_event_to_json(events);
+    // TODO: fix hardcoded python program path
+    let output = Command::new("python")
+        .arg("/home/yiyu/event-aggregator/cal.py")
+        .arg(json)
+        .output()
+        .expect("failed to execute process");
+
+    let stdout = String::from_utf8(output.stdout);
+    let stderr = String::from_utf8(output.stderr);
+    println!("output: {}", stdout.unwrap());
+    println!("err: {}", stderr.unwrap());
+
+    // TODO: err handling with exit status (i32)
+    todo!()
+}
