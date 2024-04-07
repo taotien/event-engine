@@ -5,5 +5,3 @@ venv
 **/credentials.json
 token.json
 cli/Cargo.lock
-flake.nix
-flake.lock
