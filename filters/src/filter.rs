@@ -19,6 +19,7 @@ pub async fn filter_events(
 ) -> Vec<&Event> {
     let mut filtered_events: Vec<&Event> = Vec::new(); // Create an empty vector to store filtered events
 
+    let mut count = 0;
     for event in events {
         if event_filter(
             &event,
@@ -32,7 +33,12 @@ pub async fn filter_events(
         )
         .await
         {
+            count += 1;
+            println!("PUSHPUSHPSUH {:?}", event);
             filtered_events.push(event); // Add the event to the vector if it matches the filter
+            if count > 10 {
+                break;
+            }
         }
     }
     filtered_events // Return the filtered events vector
@@ -49,6 +55,7 @@ async fn event_filter(
     max_acceptable_price: Option<u8>,
 ) -> bool {
     if !validate_good_data(event) {
+        println!("invalid data");
         return false;
     }
 
@@ -62,18 +69,21 @@ async fn event_filter(
         )
         .await
         {
+            println!("origin and mode wrong");
             return false;
         }
     }
 
     if interests.is_some() && interest_threshold.is_some() {
         if !with_interests(&interests.unwrap(), interest_threshold.unwrap(), event).await {
+            println!("no interests found");
             return false;
         }
     }
 
     if max_acceptable_price.is_some() {
         if !with_price(max_acceptable_price.unwrap(), event.price.clone()) {
+            println!("no price passed");
             return false;
         }
     }
@@ -83,7 +93,10 @@ async fn event_filter(
 fn with_price(max_acceptable_price: u8, event_price: String) -> bool {
     match event_price.parse::<u8>() {
         Ok(parsed_price) => parsed_price >= max_acceptable_price,
-        Err(_) => false,
+        Err(e) => {
+            eprintln!("{}", e);
+            false
+        }
     }
 }
 
@@ -94,11 +107,13 @@ async fn with_interests(interests: &String, interest_threshold: f32, event: &Eve
     let relevance_result = relevance(event, interests).await;
     match relevance_result {
         Ok(good_relevance_value) => return good_relevance_value >= interest_threshold,
-        Err(_) => {
+        Err(e) => {
+            eprintln!("{}", e);
             return false;
         }
     }
 }
+
 async fn with_transit(
     event: &Event,
     origin_location: String,
@@ -119,17 +134,19 @@ async fn with_transit(
                 .await;
                 match time_and_distance {
                     Ok(good_time_and_distance) => {
+                        let mut ret = false;
                         if max_acceptable_travel_distance.is_some() {
-                            return good_time_and_distance.distance
+                            ret = good_time_and_distance.distance
                                 <= *max_acceptable_travel_distance.as_ref().unwrap();
                         }
-                        if max_acceptable_travel_time.is_some() {
-                            return good_time_and_distance.travel_duration
+                        if !ret && max_acceptable_travel_time.is_some() {
+                            ret = good_time_and_distance.travel_duration
                                 <= *max_acceptable_travel_time.as_ref().unwrap();
                         }
-                        return false;
+                        return ret;
                     }
-                    Err(_) => {
+                    Err(e) => {
+                        eprintln!("{:?}", e);
                         return false;
                     }
                 };

@@ -46,18 +46,18 @@ pub(crate) async fn get_time_and_distance(
 
 fn parse_json_to_time_and_distance(
     responce: &DistanceMatrixResponse,
-) -> Result<TimeDistance, serde_json::Error> {
+) -> anyhow::Result<TimeDistance> {
     let parsed_json: Value = serde_json::from_str(&serde_json::to_string(&responce)?)?;
-    print!(
-        "{}",
-        parsed_json["rows"][0]["elements"][0]["duration"]["value"]
-    );
+    // print!(
+    //     "{}",
+    //     parsed_json["rows"][0]["elements"][0]["duration"]["value"]
+    // );
     let elements = &parsed_json["rows"][0]["elements"][0];
     let duration = &elements["duration"]["value"];
     let distance = &elements["distance"]["value"];
 
     let distance_uh = Distance {
-        value: distance.to_string().parse::<f64>().unwrap() / 1000.0,
+        value: distance.to_string().parse::<f64>()? / 1000.0,
         unit: DistanceUnit::Kilometer,
     };
 

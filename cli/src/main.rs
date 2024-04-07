@@ -113,10 +113,12 @@ async fn main() -> anyhow::Result<()> {
                 max_travel_time,
                 max_radius,
                 interests.clone(),
-                None,
-                None,
+                Some(0.5),
+                Some(100),
             )
             .await;
+
+            println!("{:#?}", filtered);
         }
 
         Commands::Status { verbose } => {
