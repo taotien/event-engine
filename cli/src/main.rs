@@ -113,8 +113,8 @@ fn main() {
         Commands::Update {} => todo!(),
     }
 
-    let config: config::Config = config::get_config();
-    println!("{:#?}", config);
+    let config_place: config::Place = config::get_config();
+    println!("{:#?}", config_place);
     /* TODO: Override default user config with use falgs if available */
 
     /* TODO: call backend */
