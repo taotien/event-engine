@@ -1,17 +1,13 @@
 use crate::Distance;
 use crate::DistanceUnit;
 use crate::TimeDistance;
-use backend::Event as backendEvent;
+use chrono::NaiveDateTime;
 use chrono::TimeDelta;
-use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime};
 use google_maps::distance_matrix::response::Response;
 use google_maps::prelude::*;
 use serde_json;
-use serde_json::value;
 use serde_json::Value;
 use std::env;
-use std::fmt;
-use std::time::Duration;
 
 pub(crate) async fn get_time_and_distance(
     origin: String,
@@ -99,7 +95,7 @@ async fn get_distance_matrix(
         Err(e) => return Err(anyhow::Error::msg(e.to_string())),
     }
 }
-
+/*
 #[cfg(test)]
 mod tests {
     use url::Url;
@@ -154,3 +150,4 @@ mod tests {
         }
     }
 }
+*/

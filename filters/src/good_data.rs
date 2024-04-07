@@ -1,6 +1,6 @@
-use backend::Event as backendEvent;
+use backend::Event;
 
-pub(crate) fn validate_good_data(event: &backendEvent) -> bool {
+pub(crate) fn validate_good_data(event: &Event) -> bool {
     !event.start_time.trim().is_empty()
         && !event.end_time.trim().is_empty()
         && !event.location.trim().is_empty()

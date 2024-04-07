@@ -1,8 +1,5 @@
 use chrono::TimeDelta;
-use google_maps::prelude::*;
 use std::fmt;
-use std::time::Duration;
-use url::Url;
 pub mod filter;
 pub mod good_data;
 pub mod interests;

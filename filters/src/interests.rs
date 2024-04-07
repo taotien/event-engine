@@ -1,24 +1,15 @@
-use std::{env, vec};
-
 use async_openai::error::OpenAIError;
 use async_openai::types::{
     ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
     ChatCompletionResponseFormat, ChatCompletionResponseFormatType,
 };
-use backend::Event as backendEvent;
+use backend::Event;
 
-use async_openai::Chat;
 use async_openai::{types::CreateChatCompletionRequestArgs, Client};
-use chrono::DateTime;
-use chrono::Local;
 use serde_json::Value;
-use url::Url;
 
 //The float returned will be between 0.0 and 1.0 inclusive on both sides
-pub(crate) async fn relevance(
-    event: &backendEvent,
-    user_preferences: &String,
-) -> anyhow::Result<f32> {
+pub(crate) async fn relevance(event: &Event, user_preferences: &String) -> anyhow::Result<f32> {
     // Create a OpenAI client with api key from env var OPENAI_API_KEY and default base url.
     let client = Client::new();
     // Create request using builder pattern
@@ -80,7 +71,7 @@ pub(crate) async fn relevance(
     Ok(relevance as f32)
 }
 
-fn event_to_relevent_string(event: &backendEvent) -> String {
+fn event_to_relevent_string(event: &Event) -> String {
     let name = event.name;
     let description = event.description;
     let tags = event.tags.join(", ");
