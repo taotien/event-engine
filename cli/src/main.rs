@@ -36,6 +36,10 @@ enum Commands {
         /// Interests keywords
         #[arg(short, long)]
         interests: Option<String>,
+
+        /// Maximum event cost
+        #[arg(short, long)]
+        price: Option<String>,
     },
 
     /// Check status
@@ -55,7 +59,7 @@ async fn main() -> anyhow::Result<()> {
 
     let max_travel_time: Option<TimeDelta>;
     let max_radius: Option<Distance>;
-    let mut config_place: config::Place = config::get_config();
+    let config_place: config::Place = config::get_config();
 
     let cli = Cli::parse();
     match &cli.command {
@@ -64,6 +68,7 @@ async fn main() -> anyhow::Result<()> {
             method,
             time,
             interests,
+            price,
         } => {
             let events = Event::get_events(&db_conn_pool).await?;
 
@@ -104,6 +109,13 @@ async fn main() -> anyhow::Result<()> {
                 max_travel_time = None;
             }
 
+            let max_price: Option<u8>;
+            if let Some(price) = price {
+                max_price = Some(u8::from_str_radix(&price, 10).unwrap());
+            } else {
+                max_price = None;
+            }
+
             let filtered = filter_events(
                 &events,
                 Some(config_place.location),
@@ -112,7 +124,7 @@ async fn main() -> anyhow::Result<()> {
                 max_radius,
                 interests.clone(),
                 Some(0.5),
-                Some(100),
+                max_price,
             )
             .await;
 

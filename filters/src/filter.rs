@@ -34,7 +34,7 @@ pub async fn filter_events(
         .await
         {
             count += 1;
-            println!("PUSHPUSHPSUH {:?}", event);
+            println!("DEBUG FILTER {:?}", event);
             filtered_events.push(event.clone()); // Add the event to the vector if it matches the filter
             if count > 10 {
                 break;
@@ -55,7 +55,7 @@ async fn event_filter(
     max_acceptable_price: Option<u8>,
 ) -> bool {
     if !validate_good_data(event) {
-        println!("invalid data");
+        // println!("invalid data");
         return false;
     }
 
@@ -69,7 +69,7 @@ async fn event_filter(
         )
         .await
         {
-            println!("origin and mode wrong");
+            // println!("origin and mode wrong");
             return false;
         }
     }
@@ -83,7 +83,7 @@ async fn event_filter(
 
     if max_acceptable_price.is_some() {
         if !with_price(max_acceptable_price.unwrap(), event.price.clone()) {
-            println!("no price passed");
+            // println!("no price passed");
             return false;
         }
     }
