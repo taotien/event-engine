@@ -1,8 +1,3 @@
-// TODO
-// migrate sql
-// actually add to thing
-//
-
 use std::{env, sync::Arc};
 
 use axum::{

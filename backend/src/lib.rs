@@ -1,5 +1,7 @@
+use std::{env, sync::Arc};
+
 use serde::{Deserialize, Serialize};
-use sqlx::SqlitePool;
+use sqlx::{Pool, Sqlite, SqlitePool};
 use url::Url;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -8,11 +10,19 @@ pub struct Event {
     start_time: Option<String>,
     end_time: Option<String>,
     location: Option<String>,
-    desciption: Option<String>,
+    description: Option<String>,
     price: Option<String>,
     tags: Option<Vec<String>>,
     source: Option<Url>,
     check_list: Vec<String>,
+}
+
+pub async fn init_pool() -> Arc<Pool<Sqlite>> {
+    Arc::new(
+        SqlitePool::connect(&env::var("DATABASE_URL").unwrap())
+            .await
+            .unwrap(),
+    )
 }
 
 impl Event {
@@ -31,8 +41,8 @@ impl Event {
     //         let name = r.name;
     //         let start_time = r.start_time;
     //         let end_time = r.end_time;
-    //         let location = Some(r.location);
-    //         let desc = Some(r.description);
+    //         let location = r.location;
+    //         let description = r.description;
     //         let price = r.price.try_into().unwrap();
     //         // let tags = Some(r.tags.split(";").collect());
     //         // let tags = Some(r.tags.unwrap().collect());
@@ -47,7 +57,7 @@ impl Event {
     //             start_time,
     //             end_time,
     //             location,
-    //             desc,
+    //             description,
     //             price,
     //             tags,
     //             source,
@@ -116,10 +126,11 @@ impl Event {
             self.start_time,
             self.end_time,
             self.location,
-            self.desciption,
+            self.description,
             self.price,
             tags,
             source,
+            check_list,
         )
         .execute(&mut *conn)
         .await?

@@ -11,4 +11,5 @@ clap = { version = "4.5.4", features = ["derive"] }
 dirs = "5.0.1"
 serde = { version = "1.0.197", features = ["derive"] }
 toml = "0.8.12"
-#backend = { path = "../backend"}
+backend = { path = "../backend"}
+tokio = { version = "1.37.0", features = ["full"] }

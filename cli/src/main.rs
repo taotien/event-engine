@@ -1,8 +1,11 @@
+use std::env;
+use std::process::exit;
+
 use chrono::TimeDelta;
 use clap::{Parser, Subcommand};
 use cli::config;
-use std::env;
-use std::process::exit;
+
+use backend::{init_pool, Event};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -39,7 +42,10 @@ enum Commands {
     Update {},
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    let db_conn_pool = init_pool().await;
+
     let max_travel_time: TimeDelta;
 
     let cli = Cli::parse();
