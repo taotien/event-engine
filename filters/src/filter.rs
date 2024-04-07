@@ -1,7 +1,7 @@
-// use crate::good_data::validate_good_data;
-// use crate::interests::relevance;
-// use crate::maps::get_time_and_distance;
-// use crate::Distance;
+use crate::good_data::validate_good_data;
+use crate::interests::relevance;
+use crate::maps::get_time_and_distance;
+use crate::Distance;
 use backend::Event as backendEvent;
 use chrono::NaiveDateTime;
 use chrono::TimeDelta;
@@ -9,8 +9,7 @@ use futures::executor::block_on;
 use futures::stream::StreamExt;
 use google_maps::directions::TravelMode;
 
-use crate::Distance;
-use chrono::NaiveDateTime;
+use backend::Event;
 
 async fn filter_events(
     events: &Vec<Event>,

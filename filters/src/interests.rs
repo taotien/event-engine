@@ -72,8 +72,8 @@ pub(crate) async fn relevance(event: &Event, user_preferences: &String) -> anyho
 }
 
 fn event_to_relevent_string(event: &Event) -> String {
-    let name = event.name;
-    let description = event.description;
+    let name = &event.name;
+    let description = &event.description;
     let tags = event.tags.join(", ");
 
     format!(
