@@ -2,7 +2,6 @@ use std::{env, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Sqlite, SqlitePool};
-use url::Url;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Event {
@@ -13,8 +12,8 @@ pub struct Event {
     description: Option<String>,
     price: Option<String>,
     tags: Option<Vec<String>>,
-    source: Option<Url>,
-    check_list: Vec<String>,
+    source: Option<String>,
+    check_list: Option<Vec<String>>,
 }
 
 pub async fn init_pool() -> Arc<Pool<Sqlite>> {
@@ -26,47 +25,49 @@ pub async fn init_pool() -> Arc<Pool<Sqlite>> {
 }
 
 impl Event {
-    // pub async fn get_events(pool: &SqlitePool) -> anyhow::Result<Vec<Event>> {
-    //     let recs = sqlx::query!(
-    //         r#"
-    //         SELECT id, name, start_time, end_time, location, description, price, tags, source
-    //         FROM events
-    //         ORDER BY name
-    //     "#
-    //     )
-    //     .fetch_all(pool)
-    //     .await?;
+    pub async fn get_events(pool: &SqlitePool) -> anyhow::Result<Vec<Event>> {
+        let recs = sqlx::query!(
+            r#"
+            SELECT id, name, start_time, end_time, location, description, price, tags, source
+            FROM events
+            ORDER BY name
+        "#
+        )
+        .fetch_all(pool)
+        .await?;
 
-    //     let res = recs.iter().map(|r| {
-    //         let name = r.name;
-    //         let start_time = r.start_time;
-    //         let end_time = r.end_time;
-    //         let location = r.location;
-    //         let description = r.description;
-    //         let price = r.price.try_into().unwrap();
-    //         // let tags = Some(r.tags.split(";").collect());
-    //         // let tags = Some(r.tags.unwrap().collect());
-    //         let tags = {
-    //             let t = r.tags.split(";");
-    //             let list = t.collect();
-    //             Ok(list)
-    //         };
-    //         let source = r.source.parse().ok();
-    //         Event {
-    //             name,
-    //             start_time,
-    //             end_time,
-    //             location,
-    //             description,
-    //             price,
-    //             tags,
-    //             source,
-    //             check_list: r.check_list,
-    //         }
-    //     });
+        let res = recs.iter().map(|r| {
+            let mut tags: Vec<String> = Vec::new();
+            if let Some(t) = &r.tags {
+                tags = t.split(";").map(|s| s.to_owned()).collect();
+            };
+            let tags = if !tags.is_empty() { Some(tags) } else { None };
 
-    //     Ok(res)
-    // }
+            let mut check_list: Vec<String> = Vec::new();
+            if let Some(c) = &r.tags {
+                check_list = c.split(";").map(|s| s.to_owned()).collect();
+            };
+            let check_list = if !check_list.is_empty() {
+                Some(check_list)
+            } else {
+                None
+            };
+
+            Event {
+                name: r.name.clone(),
+                start_time: r.start_time.clone(),
+                end_time: r.end_time.clone(),
+                location: r.location.clone(),
+                description: r.description.clone(),
+                price: r.price.clone(),
+                tags,
+                source: r.source.clone(),
+                check_list,
+            }
+        });
+
+        Ok(res.collect())
+    }
 
     pub async fn print_events(pool: &SqlitePool) -> anyhow::Result<()> {
         let recs = sqlx::query!(
@@ -116,7 +117,8 @@ impl Event {
             None => None,
         };
         let source = self.source.clone().map(|u| u.to_string());
-        let check_list = self.check_list.join(";");
+        let check_list = self.check_list.clone().unwrap();
+        let check_list = check_list.join(";");
         let id = sqlx::query!(
             r#"
              INSERT INTO events ( name, start_time, end_time, location, description, price, tags, source, check_list )
