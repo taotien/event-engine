@@ -5,11 +5,13 @@ pub mod good_data;
 pub mod interests;
 pub mod maps;
 
+/// A type from the maps function that stores a travel_duration as TimeDelta and distance as Distance
 pub struct TimeDistance {
     pub travel_duration: TimeDelta,
     pub distance: Distance,
 }
 
+/// A struct that represents a distance with units of Miles or Kilometers. Comparable despite units or Distances
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Distance {
     pub value: f64,

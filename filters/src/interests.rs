@@ -8,7 +8,46 @@ use backend::Event;
 use async_openai::{types::CreateChatCompletionRequestArgs, Client};
 use serde_json::Value;
 
-//The float returned will be between 0.0 and 1.0 inclusive on both sides
+/// Calculates the relevance of an event based on user preferences.
+///
+/// Requires enviornment variable of OPENAI_API_KEY to be set
+/// Rates the relevency of a an event's name, description, and tags to specified interests on a scale of 0.0 to 1.0 using gpt-3.5-turbo-0125
+///
+/// # Arguments
+///
+/// * `event` - The event for which the relevance needs to be calculated.
+/// * `user_preferences` - The user's preferences as a string.
+///
+/// # Returns
+///
+/// Returns a `Result` containing the relevance score as a `f32` between 0.0 and 1.0 if the calculation is successful, or an `anyhow::Error` if an error occurs.
+///
+/// # Example
+///
+/// ```rust
+/// use backend::Event;
+/// use async_openai::error::OpenAIError;
+/// use async_openai::types::{
+///     ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
+///     ChatCompletionResponseFormat, ChatCompletionResponseFormatType,
+/// };
+/// use async_openai::{types::CreateChatCompletionRequestArgs, Client};
+/// use serde_json::Value;
+///
+/// async fn example() -> anyhow::Result<()> {
+///     let event = Event {
+///         // event details
+///     };
+///
+///     let user_preferences = "art and culture".to_string();
+///
+///     let relevance = relevance(&event, &user_preferences).await?;
+///
+///     println!("Relevance: {}", relevance);
+///
+///     Ok(())
+/// }
+/// ```
 pub(crate) async fn relevance(event: &Event, user_preferences: &String) -> anyhow::Result<f32> {
     // Create a OpenAI client with api key from env var OPENAI_API_KEY and default base url.
     let client = Client::new();
@@ -81,57 +120,3 @@ fn event_to_relevent_string(event: &Event) -> String {
         name, description, tags
     )
 }
-/*
-#[cfg(test)]
-mod tests {
-    use std::time::Duration;
-
-    use chrono::{NaiveDate, NaiveDateTime, NaiveTime, TimeZone};
-    use google_maps::directions::TravelMode;
-
-    use crate::Distance;
-
-    use super::*;
-
-    #[tokio::test]
-    async fn test_relevance() -> anyhow::Result<()> {
-        // Create test event and user preferences
-        let start_time = NaiveDateTime::new(
-            NaiveDate::from_ymd_opt(2024, 4, 7).unwrap(),
-            NaiveTime::from_hms_opt(10, 0, 0).unwrap(),
-        );
-
-        let end_time = NaiveDateTime::new(
-            NaiveDate::from_ymd_opt(2024, 4, 7).unwrap(),
-            NaiveTime::from_hms_opt(17, 0, 0).unwrap(),
-        );
-
-        let event = Event {
-            name: String::from("Asian Art Museum: Free Admission Day (Every First Sunday)"),
-            start_time: chrono::Local.from_local_datetime(&start_time).unwrap(),
-            end_time: chrono::Local.from_local_datetime(&end_time).unwrap(),
-            location: String::from("200 Larkin Street San Francisco, CA"),
-            desc: String::from("Through the power of art, the Asian Art Museum in San Francisco brings the diverse cultures of Asia to life."),
-            price: 0,
-            tags: vec![String::from("art"), String::from("asian"), String::from("culture")],
-            source: Url::parse("https://sf.funcheap.com/asian-art-museum-free-admission-day-every-first-sunday-35/").unwrap(),
-        };
-
-        let filter = EventFilter {
-            home_location: String::from("2345 Golden Gate Ave, San Francisco, CA 94118"),
-            transit_method: TravelMode::Transit,
-            max_radius_distance: Distance::from_kilometers(10.0),
-            max_radius_time: Duration::from_secs(1800),
-            interests: vec![String::from("dog fighting"), String::from("violent crime")],
-        };
-
-        // Call the relevance function
-        let result = relevance(event, filter.interests).await?;
-        println!("Result: {}", result);
-        // Assert that the result is within the expected range
-        assert!(result >= 0.0 && result <= 1.0);
-
-        Ok(())
-    }
-}
-*/

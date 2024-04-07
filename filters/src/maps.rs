@@ -7,6 +7,44 @@ use google_maps::prelude::*;
 use serde_json::Value;
 use std::env;
 
+/// Gets the time and distance to get to an event at it's start time using the specified transit mode
+///
+/// Requires enviornment variable of GOOGLE_MAPS_API_KEY to be set
+/// This function only works if `max_acceptable_travel_time` or `max_acceptable_travel_distance` are `Some`
+/// max_acceptable_travel_time and max_acceptable_travel_distance will use the provided travel mode to find the duration &or distance of travel using the specified travel mode when set to arrive at the start of the event
+///
+/// # Arguments
+///
+/// * `origin` - A `String` representing the origin location of the user as an standard street address
+/// * `destination` ~ A `String` representing the destination location of the event as an standard street address
+/// * `travel_mode` - A `TravelMode` enum representing the travel mode
+/// * `arrival_time` - A `NaiveDateTime`  representing the time the user should arrive that the destination
+///
+/// # Returns
+///
+/// A Result that has a TimeDistance containing the time it takes to get there and the distance of the route or an Error if something goes wrong
+///
+/// # Example
+///
+/// ```
+///#[tokio::main]
+///async fn main() {
+///    let origin = String::from("123 Main St, City");
+///    let destination = String::from("456 Park Ave, City");
+///    let transit_method = TravelMode::Driving;
+///    let arrival_time = NaiveDateTime::from_timestamp(1634567890, 0);
+///
+///    match get_time_and_distance(origin, &destination, transit_method, arrival_time).await {
+///        Ok(time_distance) => {
+///            println!("Travel Duration: {:?}", time_distance.travel_duration);
+///            println!("Distance: {:?}", time_distance.distance);
+///        }
+///        Err(err) => {
+///            eprintln!("Error: {}", err);
+///        }
+///    }
+///}
+/// ```
 pub(crate) async fn get_time_and_distance(
     origin: String,
     destination: &String,
@@ -93,59 +131,3 @@ async fn get_distance_matrix(
         Err(e) => return Err(anyhow::Error::msg(e.to_string())),
     }
 }
-/*
-#[cfg(test)]
-mod tests {
-    use url::Url;
-
-    use super::*;
-
-    #[tokio::test]
-    async fn test_get_time_and_distance() {
-        // Test case setup
-        let start_time = NaiveDateTime::new(
-            NaiveDate::from_ymd_opt(2024, 4, 7).unwrap(),
-            NaiveTime::from_hms_opt(10, 0, 0).unwrap(),
-        );
-        let end_time = NaiveDateTime::new(
-            NaiveDate::from_ymd_opt(2024, 4, 7).unwrap(),
-            NaiveTime::from_hms_opt(17, 0, 0).unwrap(),
-        );
-
-        let event = Event {
-        name: String::from("Asian Art Museum: Free Admission Day (Every First Sunday)"),
-        start_time: chrono::Local.from_local_datetime(&start_time).unwrap(),
-        end_time: chrono::Local.from_local_datetime(&end_time).unwrap(),
-        location: String::from("200 Larkin Street San Francisco, CA"),
-        desc: String::from("Through the power of art, the Asian Art Museum in San Francisco brings the diverse cultures of Asia to life."),
-        price: 0,
-        tags: vec![String::from("art"), String::from("asian"), String::from("culture")],
-        source: Url::parse("https://sf.funcheap.com/asian-art-museum-free-admission-day-every-first-sunday-35/").unwrap(),
-    };
-
-        // Create a sample event filter
-        let filter = EventFilter {
-            home_location: String::from("2345 Golden Gate Ave, San Francisco, CA 94118"),
-            transit_method: TravelMode::Transit,
-            max_radius_distance: Distance::from_kilometers(10.0),
-            max_radius_time: Duration::from_secs(1800),
-            interests: vec![String::from("technology"), String::from("art")],
-        };
-
-        let result = get_time_and_distance(
-            filter.home_location,
-            event.location,
-            filter.transit_method,
-            event.start_time.naive_local(),
-        );
-
-        match result {
-            Ok(time_distance) => {
-                println!("{}", time_distance.travel_duration.to_string());
-                println!("{}", time_distance.distance.to_string());
-            }
-            Err(_) => todo!(),
-        }
-    }
-}
-*/
