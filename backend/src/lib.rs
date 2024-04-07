@@ -12,7 +12,6 @@
 //! Run spider with python, and it should communicate with the db server
 //!
 //! Finally, you can call `cargo r --bin backend -- list` to dump the database and see if it's populated
-
 use std::{env, sync::Arc};
 
 use serde::{Deserialize, Serialize};
