@@ -7,7 +7,7 @@ use chrono::NaiveDateTime;
 use chrono::TimeDelta;
 use google_maps::directions::TravelMode;
 
-async fn filter_events(
+pub async fn filter_events(
     events: &Vec<Event>,
     origin_location: Option<String>,
     travel_mode: Option<TravelMode>,
