@@ -44,11 +44,13 @@ async fn filter_events(
                 max_acceptable_travel_distance.as_ref(),
             ) {
                 if with_transit(
+            if origin_location.is_some() && travel_mode.is_some() {
+                if !with_transit(
                     event,
-                    origin_location.to_owned(),
-                    travel_mode.to_owned(),
-                    max_acceptable_travel_time.to_owned(),
-                    max_acceptable_travel_distance.to_owned(),
+                    origin_location.unwrap(),
+                    travel_mode.unwrap(),
+                    max_acceptable_travel_time,
+                    max_acceptable_travel_distance,
                 )
                 .await
                 {
@@ -115,42 +117,36 @@ async fn with_interests(interests: &String, interest_threshold: f32, event: &bac
     }
 }
 async fn with_transit(
-    events: &backendEvent,
+    event: &backendEvent,
     origin_location: String,
     travel_mode: TravelMode,
     max_acceptable_travel_time: Option<TimeDelta>,
     max_acceptable_travel_distance: Option<Distance>,
 ) -> bool {
     if max_acceptable_travel_time.is_some() || max_acceptable_travel_distance.is_some() {
-        let parsed_date_time = match parse_date_time(&event.start_time) {
-            Some(date_time) => {
+        let parsed_date_time = parse_date_time(&event.start_time);
+        match parsed_date_time {
+            Some(good_parsed_date_time) => {
                 let time_and_distance = get_time_and_distance(
-                    origin_location.as_ref().unwrap(),
+                    origin_location,
                     &event.location,
-                    travel_mode.as_ref().unwrap(),
-                    date_time,
+                    travel_mode,
+                    good_parsed_date_time,
                 )
                 .await;
                 match time_and_distance {
                     Ok(good_time_and_distance) => {
-                        // if max_acceptable_travel_distance.is_some() {
-                        //     if good_time_and_distance.distance
-                        //         > *max_acceptable_travel_distance.as_ref().unwrap()
-                        //     {
-                        //         return false;
-                        //     }
-                        // }
-                        // if max_acceptable_travel_time.is_some() {
-                        //     if good_time_and_distance.travel_duration
-                        //         > *max_acceptable_travel_time.as_ref().unwrap()
-                        //     {
-                        //         return false;
-                        //     }
-                        // }
+                        if max_acceptable_travel_distance.is_some() {
+                            return good_time_and_distance.distance
+                                <= *max_acceptable_travel_distance.as_ref().unwrap();
+                        }
+                        if max_acceptable_travel_time.is_some() {
+                            return good_time_and_distance.travel_duration
+                                <= *max_acceptable_travel_time.as_ref().unwrap();
+                        }
                         return false;
                     }
                     Err(_) => {
-                        // Handle the error case here
                         return false;
                     }
                 };

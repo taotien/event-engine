@@ -15,7 +15,7 @@ use std::time::Duration;
 
 pub(crate) async fn get_time_and_distance(
     origin: String,
-    destination: String,
+    destination: &String,
     transit_method: TravelMode,
     arrival_time: NaiveDateTime,
 ) -> anyhow::Result<TimeDistance> {
