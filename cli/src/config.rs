@@ -7,7 +7,7 @@ use toml;
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-pub struct Config {
+struct Config {
     main: Main,
     home: Home,
     school: School,
@@ -59,6 +59,7 @@ fn parse_config(path: PathBuf) -> Config {
     return config;
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Place {
     location: String,
