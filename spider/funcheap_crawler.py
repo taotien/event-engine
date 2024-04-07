@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 import re
 import time
@@ -10,6 +11,10 @@ from bs4 import BeautifulSoup as bs
 from ai_parser import AIParser
 from client import Client
 from crawler import Crawler
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(filename)s %(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    filename='crawler.log', filemode='a')
 
 
 class FunCheapCrawler(Crawler, Thread):
@@ -26,6 +31,8 @@ class FunCheapCrawler(Crawler, Thread):
         self.ai = AIParser()
         self.client = Client()
 
+        self.__logger = logging.getLogger(__name__)
+
     def list_gen(self):
         # get total page count
         front_res = requests.get(url=self.front_url, headers=self.headers)
@@ -34,6 +41,7 @@ class FunCheapCrawler(Crawler, Thread):
 
         # generate list urls
         for i in range(1, page_count+1):
+            self.__logger.info(f"Requesting List Page: [{i}]")
             url = self.ls_url.format(page_num=i)
             page_res = requests.get(url=url, headers=self.headers)
             page_soup = bs(page_res.text, 'lxml')
@@ -45,13 +53,14 @@ class FunCheapCrawler(Crawler, Thread):
         retry_count = 0
         while retry_count < 3:
             try:
+                self.__logger.info(f"Requesting Detail Page: [{url}]")
                 res = requests.get(url=url, headers=self.headers)
                 if res.status_code != 200:
                     retry_count += 1
                     continue
                 break
             except Exception as e:
-                print(f"Request Error: {e}")
+                self.__logger.error(f"Request Error: {e}")
                 retry_count += 1
 
         if res.status_code != 200:
@@ -65,7 +74,7 @@ class FunCheapCrawler(Crawler, Thread):
             try:
                 content[0].findAll(id="other-events-day-list")[0].decompose()
             except IndexError as e:
-                print(e)
+                self.__logger.error(e)
 
             content = content[0].text.strip() if content else ""
         return f"source url:{url}\t"+ content
@@ -76,16 +85,11 @@ class FunCheapCrawler(Crawler, Thread):
             try:
                 content = self.detail_gen(url)
                 events = json.loads(self.ai.parse(content=content))['events']
-                print(f"[{self.name}]Pushing events from source: [{url}]")
+                self.__logger.info(f"[{self.name}]Pushing events from source: [{url}]")
                 for idx, event in events.items():
-                    print(f"[{self.name}]Adding event [{idx}][{event}]")
+                    self.__logger.info(f"[{self.name}]Adding event [{idx}][{event}]")
                     self.client.push(event)
                 time.sleep(random.uniform(0.1, 0.3))
             except Exception as e:
-                print(e)
+                self.__logger.error(e)
         self.client.fetch()
-
-
-if __name__ == '__main__':
-    fc = FunCheapCrawler()
-    fc.run()

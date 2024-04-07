@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 import time
 from threading import Thread
@@ -10,6 +11,10 @@ from ai_parser import AIParser
 from client import Client
 from crawler import Crawler
 
+logging.basicConfig(level=logging.INFO,
+                    format='%(filename)s %(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    filename='crawler.log', filemode='a')
+
 
 class USFCrawler(Crawler, Thread):
     def __init__(self):
@@ -20,6 +25,8 @@ class USFCrawler(Crawler, Thread):
         self.__detail_urls = []
         self.__ai = AIParser()
         self.__client = Client()
+
+        self.__logger = logging.getLogger(__name__)
 
     def list_gen(self):
         page_num = 1
@@ -38,9 +45,18 @@ class USFCrawler(Crawler, Thread):
             page_num += 1
 
     def detail_gen(self, url):
+        retry_count = 0
+        while retry_count < 3:
+            self.__logger.info(f"Requesting Detail Page: [{url}]")
+            res = requests.get(url=url, headers=self.__headers)
+            if res.status_code != 200:
+                retry_count += 1
+                continue
+            time.sleep(random.uniform(0.1, 0.3))
+            break
 
-        res = requests.get(url=url, headers=self.__headers)
-        time.sleep(random.uniform(0.1, 0.3))
+        if res.status_code != 200:
+            return ""
 
         # parse details
         soup = bs(res.text, 'lxml')
@@ -60,17 +76,12 @@ class USFCrawler(Crawler, Thread):
                 content = self.detail_gen(url)
 
                 events = json.loads(self.__ai.parse(content=content))['events']
-                print(f"[{self.name}]Pushing events for source: [{url}]")
+                self.__logger.info(f"[{self.name}]Pushing events for source: [{url}]")
                 for idx, event in events.items():
-                    print(f"[{self.name}]Adding event [{idx}][{event}]")
+                    self.__logger.info(f"[{self.name}]Adding event [{idx}][{event}]")
                     self.__client.push(event)
                 time.sleep(random.uniform(0.1, 0.3))
             except Exception as e:
-                print(e)
+                self.__logger.error(e)
 
         self.__client.fetch()
-
-
-if __name__ == '__main__':
-    uc = USFCrawler()
-    uc.run()
