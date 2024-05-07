@@ -19,6 +19,14 @@
           packages = [
           ];
           buildInputs = [
+            libxkbcommon
+            libGL
+            wayland
+            xorg.libXcursor
+            xorg.libXrandr
+            xorg.libXi
+            xorg.libX11
+
             pkg-config
             openssl
           ];

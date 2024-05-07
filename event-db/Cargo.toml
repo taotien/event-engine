@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.83"
+sea-orm = { version = "0.12.15", features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros"] }
+tokio = { version = "1.37.0", features = ["full"] }
