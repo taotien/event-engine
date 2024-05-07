@@ -1,0 +1,4 @@
+[workspace]
+
+members = ["event-db", "event-scraper", "event-ui"]
+resolver = "2"
