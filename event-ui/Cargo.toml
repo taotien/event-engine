@@ -10,18 +10,18 @@ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [dependencies]
 anyhow = "1.0.83"
-
 egui = "0.27.0"
 eframe = { version = "0.27.0", default-features = false, features = [
-    # "accesskit",     # Make egui comptaible with screen readers. NOTE: adds a lot of dependencies.
-    "default_fonts", # Embed the default egui fonts.
-    "glow",          # Use the glow rendering backend. Alternative: "wgpu".
-    # "persistence",   # Enable restoring app state when restarting the app.
+  # "accesskit",     # Make egui comptaible with screen readers. NOTE: adds a lot of dependencies.
+  "default_fonts", # Embed the default egui fonts.
+  "glow",          # Use the glow rendering backend. Alternative: "wgpu".
+  "persistence",   # Enable restoring app state when restarting the app.
 ] }
 log = "0.4"
-
 # You only need serde if you want app persistence:
 serde = { version = "1", features = ["derive"] }
+
+event-scraper = { path = "../event-scraper" }
 
 # native:
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -46,4 +46,3 @@ opt-level = 2
 # If you fork https://github.com/emilk/egui you can test with:
 # egui = { path = "../egui/crates/egui" }
 # eframe = { path = "../egui/crates/eframe" }
-

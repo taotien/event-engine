@@ -1,5 +1,5 @@
 [workspace]
-members = ["event-db", "event-scraper", "event-ui"]
+members = ["event-scraper", "event-ui"]
 resolver = "2"
 
 [profile.release]

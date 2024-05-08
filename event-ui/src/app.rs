@@ -1,35 +1,46 @@
-use egui::{CentralPanel, Hyperlink, ScrollArea, SidePanel, TopBottomPanel};
+use egui::{
+    Align, CentralPanel, Hyperlink, Layout, ScrollArea, SidePanel, Spinner, TopBottomPanel,
+};
+use serde::{Deserialize, Serialize};
 
+use event_scraper::{Event, USFCA_EVENTS};
+
+#[derive(Serialize, Deserialize)]
+#[serde(default)]
 pub struct App {
     events: Vec<Event>,
-}
 
-struct Event {}
+    #[serde(skip)]
+    grabbing: bool,
+}
 
 impl Default for App {
     fn default() -> Self {
-        Self { events: Vec::new() }
+        Self {
+            events: Vec::new(),
+            grabbing: false,
+        }
     }
 }
 
 impl App {
-    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         // This is also where you can customize the look and feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
 
         // Load previous app state (if any).
         // Note that you must enable the `persistence` feature for this to work.
-        // if let some(storage) = cc.storage {
-        //     return eframe::get_value(storage, eframe::app_key).unwrap_or_default();
-        // }
+        if let Some(storage) = cc.storage {
+            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
+        }
 
         Default::default()
     }
 }
 
 impl eframe::App for App {
-    fn save(&mut self, _storage: &mut dyn eframe::Storage) {
-        // eframe::set_value(storage, eframe::APP_KEY, self);
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -52,25 +63,40 @@ impl eframe::App for App {
         });
 
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
+            ui.with_layout(Layout::bottom_up(Align::LEFT), |ui| {
                 crate::powered_by_egui_and_eframe(ui);
                 egui::warn_if_debug_build(ui);
+                if cfg!(debug_assertions) {
+                    if ui.button("reset").clicked() {
+                        *self = Default::default();
+                    }
+                }
             });
         });
 
         SidePanel::left("left_panel").show(ctx, |ui| {
             ui.heading("sources");
             ui.separator();
-            ui.label("(currently only supports USF events)");
+            // ui.label("(currently only supports USF events)");
+
+            if ui.button("USF Events").clicked() {
+                self.grabbing = true;
+                // let client = Client::new();
+
+                // for postfix in event_scraper::pages(&client).await? {
+                //     let page = format!("{}{}", USFCA_EVENTS, postfix);
+                //     let events = event_scraper::scrape(&client, page.parse()?).await?;
+
+                //     println!("{:#?}", events);
+                // }
+            }
 
             let usf_link = Hyperlink::from_label_and_url(
-                "USF events calendar",
+                "source: USF Events Calendar (new tab)",
                 "https://www.usfca.edu/life-usf/events",
             )
             .open_in_new_tab(true);
             ui.add(usf_link);
-
-            if ui.button("grab events").clicked() {}
         });
 
         SidePanel::right("right_panel").show(ctx, |ui| {
@@ -82,8 +108,21 @@ impl eframe::App for App {
         });
 
         CentralPanel::default().show(ctx, |ui| {
+            if self.grabbing {
+                ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                    //     ui.horizontal(|ui| {
+                    ui.label("loading events");
+                    ui.add(Spinner::new());
+                    //     });
+                });
+            }
             ScrollArea::vertical().show(ui, |ui| {
-                ui.label("howdy world");
+                for event in &mut self.events {
+                    ui.group(|ui| {
+                        ui.label(event.name.clone());
+                        // ui.checkbox(&mut event.export, "")
+                    });
+                }
             });
         });
     }
