@@ -1,6 +1,7 @@
 use egui::{
     Align, CentralPanel, Hyperlink, Layout, ScrollArea, SidePanel, Spinner, TopBottomPanel,
 };
+use chrono::prelude::Utc;
 use serde::{Deserialize, Serialize};
 
 use event_scraper::{Event, USFCA_EVENTS};
@@ -64,6 +65,8 @@ impl eframe::App for App {
 
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.with_layout(Layout::bottom_up(Align::LEFT), |ui| {
+                let now = Utc::now();
+                ui.label(format!("Copyright {}", now.format("%Y-%m-%d")));
                 crate::powered_by_egui_and_eframe(ui);
                 egui::warn_if_debug_build(ui);
                 if cfg!(debug_assertions) {
