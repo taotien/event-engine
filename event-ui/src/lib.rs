@@ -4,14 +4,17 @@ mod app;
 pub use app::App;
 
 pub struct Scraper {
-    response: ehttp::Response,
+    _response: ehttp::Response,
     text: Option<String>,
 }
 
 impl Scraper {
-    pub fn from_response(ctx: &egui::Context, response: ehttp::Response) -> Self {
+    pub fn from_response(_ctx: &egui::Context, response: ehttp::Response) -> Self {
         let text = response.text().map(|t| t.into());
-        Self { response, text }
+        Self {
+            _response: response,
+            text,
+        }
     }
 }
 
