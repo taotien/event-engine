@@ -1,25 +1,28 @@
-use egui::{
-    Align, CentralPanel, Hyperlink, Layout, ScrollArea, SidePanel, Spinner, TopBottomPanel,
-};
+use std::collections::{HashSet, VecDeque};
+
 use chrono::prelude::Utc;
+use egui::{Align, CentralPanel, Hyperlink, Layout, ScrollArea, SidePanel, TopBottomPanel};
+use poll_promise::Promise;
 use serde::{Deserialize, Serialize};
 
-use event_scraper::{Event, USFCA_EVENTS};
+use event_scraper::{UsfEvent, USFCA_EVENTS_URL};
+
+use crate::Scraper;
 
 #[derive(Serialize, Deserialize)]
 #[serde(default)]
 pub struct App {
-    events: Vec<Event>,
+    events: HashSet<UsfEvent>,
 
     #[serde(skip)]
-    grabbing: bool,
+    promise: VecDeque<Promise<ehttp::Result<Scraper>>>,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
-            events: Vec::new(),
-            grabbing: false,
+            events: HashSet::new(),
+            promise: VecDeque::new(),
         }
     }
 }
@@ -82,20 +85,24 @@ impl eframe::App for App {
             ui.separator();
             // ui.label("(currently only supports USF events)");
 
-            if ui.button("USF Events").clicked() {
-                self.grabbing = true;
-                // let client = Client::new();
-
-                // for postfix in event_scraper::pages(&client).await? {
-                //     let page = format!("{}{}", USFCA_EVENTS, postfix);
-                //     let events = event_scraper::scrape(&client, page.parse()?).await?;
-
-                //     println!("{:#?}", events);
-                // }
+            if ui.button("Fetch Events").clicked() {
+                for page in 0..=6 {
+                    let ctx = ctx.clone();
+                    let (sender, promise) = Promise::new();
+                    let request =
+                        ehttp::Request::get(format!("{}?page={}", USFCA_EVENTS_URL, page));
+                    ehttp::fetch(request, move |response| {
+                        ctx.request_repaint();
+                        let resource =
+                            response.map(|response| Scraper::from_response(&ctx, response));
+                        sender.send(resource);
+                    });
+                    self.promise.push_back(promise);
+                }
             }
 
             let usf_link = Hyperlink::from_label_and_url(
-                "source: USF Events Calendar (new tab)",
+                "source: USF Events Calendar",
                 "https://www.usfca.edu/life-usf/events",
             )
             .open_in_new_tab(true);
@@ -111,19 +118,38 @@ impl eframe::App for App {
         });
 
         CentralPanel::default().show(ctx, |ui| {
-            if self.grabbing {
-                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                    //     ui.horizontal(|ui| {
-                    ui.label("loading events");
-                    ui.add(Spinner::new());
-                    //     });
-                });
-            }
-            ScrollArea::vertical().show(ui, |ui| {
-                for event in &mut self.events {
-                    ui.group(|ui| {
-                        ui.label(event.name.clone());
-                        // ui.checkbox(&mut event.export, "")
+            // for promise in &self.promise {}
+            self.promise.retain(|promise| {
+                if let Some(result) = promise.ready() {
+                    match result {
+                        Ok(resource) => {
+                            let Scraper { text, .. } = resource;
+                            if let Some(text) = &text {
+                                self.events.extend(event_scraper::scrape(text).unwrap());
+                            }
+                        }
+                        Err(e) => {
+                            ui.colored_label(
+                                ui.visuals().error_fg_color,
+                                if e.is_empty() { "Error!" } else { e },
+                            );
+                        }
+                    }
+                    false
+                } else {
+                    ui.spinner();
+                    true
+                }
+            });
+            ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
+                // self.events.sort_by(|l, r| l.time.cmp(&r.time));
+                let mut events_sorted: Vec<_> = self.events.iter().collect();
+                events_sorted.sort_by(|l, r| l.time.cmp(&r.time));
+                for event in events_sorted {
+                    ui.collapsing(event.name.clone(), |ui| {
+                        ui.label(event.time.clone());
+                        ui.label(event.location.clone().unwrap_or("".into()));
+                        ui.hyperlink_to("link", event.source.clone());
                     });
                 }
             });

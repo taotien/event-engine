@@ -3,6 +3,18 @@
 mod app;
 pub use app::App;
 
+pub struct Scraper {
+    response: ehttp::Response,
+    text: Option<String>,
+}
+
+impl Scraper {
+    pub fn from_response(ctx: &egui::Context, response: ehttp::Response) -> Self {
+        let text = response.text().map(|t| t.into());
+        Self { response, text }
+    }
+}
+
 fn powered_by_egui_and_eframe(ui: &mut egui::Ui) {
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 0.0;

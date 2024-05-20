@@ -1,8 +1,7 @@
-use reqwest::{Client, Url};
 use scraper::{Html, Selector};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
-pub struct Event {
+#[derive(serde::Serialize, serde::Deserialize, Debug, Eq, PartialEq, Hash)]
+pub struct UsfEvent {
     pub name: String,
     // start_time: String,
     // end_time: String,
@@ -15,11 +14,10 @@ pub struct Event {
     pub source: String,
 }
 
-pub const USFCA_EVENTS: &str = "https://www.usfca.edu/life-usf/events";
+pub const USFCA_EVENTS_URL: &str = "https://www.usfca.edu/life-usf/events";
 
-pub async fn pages(client: &Client) -> anyhow::Result<Vec<String>> {
-    let html = client.get(USFCA_EVENTS).send().await?.text().await?;
-    let document = Html::parse_document(&html);
+pub fn pages(html: &str) -> anyhow::Result<Vec<String>> {
+    let document = Html::parse_document(html);
 
     let pager = Selector::parse("li.pager__item > a").unwrap();
     let mut pages: Vec<_> = document
@@ -32,9 +30,8 @@ pub async fn pages(client: &Client) -> anyhow::Result<Vec<String>> {
     Ok(pages)
 }
 
-pub async fn scrape(client: &Client, url: Url) -> anyhow::Result<Vec<Event>> {
-    let html = client.get(url).send().await?.text().await?;
-    let document = Html::parse_document(&html);
+pub fn scrape(html: &str) -> anyhow::Result<Vec<UsfEvent>> {
+    let document = Html::parse_document(html);
 
     let listing = Selector::parse(
         "div.lr--main > div.cc--events-listing > div.c--events-listing > div.f--field-components > section.cc--events-listing-component > div.c--events-listing-component > div.text-container",
@@ -65,7 +62,7 @@ pub async fn scrape(client: &Client, url: Url) -> anyhow::Result<Vec<Event>> {
                 None => None,
             };
 
-            Event {
+            UsfEvent {
                 name,
                 time,
                 location,
