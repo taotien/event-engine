@@ -1,0 +1,8 @@
+[package]
+name = "event-export"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+event-scraper = { version = "0.1.0", path = "../event-scraper" }
+icalendar = "0.16.1"
