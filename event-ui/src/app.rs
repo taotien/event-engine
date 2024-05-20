@@ -1,7 +1,9 @@
 use std::collections::{HashSet, VecDeque};
 
 use chrono::prelude::Utc;
-use egui::{Align, CentralPanel, Hyperlink, Layout, ScrollArea, SidePanel, TopBottomPanel};
+use egui::{
+    Align, CentralPanel, CollapsingHeader, Hyperlink, Layout, ScrollArea, SidePanel, TopBottomPanel,
+};
 use poll_promise::Promise;
 use serde::{Deserialize, Serialize};
 
@@ -16,6 +18,8 @@ pub struct App {
 
     #[serde(skip)]
     promise: VecDeque<Promise<ehttp::Result<Scraper>>>,
+    #[serde(skip)]
+    collapsed: bool,
 }
 
 impl Default for App {
@@ -23,6 +27,7 @@ impl Default for App {
         Self {
             events: HashSet::new(),
             promise: VecDeque::new(),
+            collapsed: true,
         }
     }
 }
@@ -118,7 +123,6 @@ impl eframe::App for App {
         });
 
         CentralPanel::default().show(ctx, |ui| {
-            // for promise in &self.promise {}
             self.promise.retain(|promise| {
                 if let Some(result) = promise.ready() {
                     match result {
@@ -141,16 +145,28 @@ impl eframe::App for App {
                     true
                 }
             });
+
+            let expand_toggle = ui.toggle_value(&mut self.collapsed, "Expand all");
+
+            ui.separator();
+
             ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
                 // self.events.sort_by(|l, r| l.time.cmp(&r.time));
                 let mut events_sorted: Vec<_> = self.events.iter().collect();
                 events_sorted.sort_by(|l, r| l.time.cmp(&r.time));
                 for event in events_sorted {
-                    ui.collapsing(event.name.clone(), |ui| {
-                        ui.label(event.time.clone());
-                        ui.label(event.location.clone().unwrap_or("".into()));
-                        ui.hyperlink_to("link", event.source.clone());
-                    });
+                    CollapsingHeader::new(event.name.clone())
+                        .id_source(event)
+                        .open(if expand_toggle.clicked() {
+                            Some(self.collapsed)
+                        } else {
+                            None
+                        })
+                        .show(ui, |ui| {
+                            ui.label(event.time.clone());
+                            ui.label(event.location.clone().unwrap_or("".into()));
+                            ui.hyperlink_to("link", event.source.clone());
+                        });
                 }
             });
         });
