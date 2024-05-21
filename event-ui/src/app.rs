@@ -34,9 +34,6 @@ impl Default for App {
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        // This is also where you can customize the look and feel of egui using
-        // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
-
         // Load previous app state (if any).
         // Note that you must enable the `persistence` feature for this to work.
         if let Some(storage) = cc.storage {
@@ -63,10 +60,10 @@ impl eframe::App for App {
 
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.with_layout(Layout::bottom_up(Align::LEFT), |ui| {
-                let now = Utc::now();
-                ui.label(format!("Copyright {}", now.format("%Y-%m-%d")));
                 crate::powered_by_egui_and_eframe(ui);
                 egui::warn_if_debug_build(ui);
+                let now = Utc::now();
+                ui.label(format!("Copyright {}", now.format("%Y-%m-%d")));
             });
         });
 
