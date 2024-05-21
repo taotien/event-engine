@@ -17,6 +17,9 @@
       with pkgs; rec {
         devShell = mkShell rec {
           packages = [
+            rustup
+            trunk
+            wasm-bindgen-cli
           ];
           buildInputs = [
             libxkbcommon

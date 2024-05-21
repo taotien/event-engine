@@ -1,7 +1,7 @@
 use chrono::{NaiveDateTime, NaiveTime, Timelike};
 use scraper::{Html, Selector};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Eq, PartialEq, Hash)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Eq, PartialEq, Hash, Clone)]
 pub struct UsfEvent {
     pub name: String,
     pub time_start: NaiveDateTime,

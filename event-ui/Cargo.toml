@@ -25,7 +25,11 @@ getrandom = { version = "0.2", features = [
 ] } # compilation bug for eframe, should not need to include this line
 chrono = "0.4.38"
 poll-promise = "0.3.0"
+# ehttp = { git = "https://github.com/emilk/ehttp.git", rev = "4e63d731298d5f1411eb96a1f4e480d8bd771d50" }
 ehttp = "0.5.0"
+egui_file = "0.17.0"
+event-export = { version = "0.1.0", path = "../event-export" }
+egui_extras = { version = "0.27.2", features = ["datepicker", "chrono", "all_loaders"] }
 # reqwest = { version = "0.12.4", features = ["rustls-tls"] }
 
 # native:

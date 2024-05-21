@@ -1,0 +1,30 @@
+Dependencies:
+cargo/rust (https://rustup.rs/)
+Linux-specific: nix (https://nixos.org/) OR egui deps (https://github.com/emilk/egui/tree/master/crates/eframe)
+
+To run on desktop:
+
+steps in terminal (windows):
+rustup default nightly
+cd [path/to/event-engine]
+cargo run
+
+steps in terminal (linux):
+cd [path/to/event-engine]
+nix develop # this should pull in all dependencies automatically
+cargo run
+
+
+To run on browser:
+NOTE: UI works, but fetch is blocked by USF server CORS policy (or lack thereof).
+
+There should be a pre-built version in event-ui/dist, or online at https://taotien.github.io/event-engine/, but in case those don't work:
+
+extra dependencies:
+trunk (https://trunkrs.dev)
+
+steps in terminal:
+rustup target add wasm32-unknown-unknown
+cd [path/to/event-engine]
+trunk serve
+
